@@ -135,9 +135,7 @@
       >
 
 
-        <!-- ==================================================
-             PLAYERS
-        ================================================== -->
+        <!-- PLAYERS -->
 
         <div class="card lobbyPlayers">
 
@@ -179,10 +177,6 @@
 
       <!-- ==================================================
            CHAT
-           
-           IMPORTANT:
-           Chat is OUTSIDE the lobby so it can appear
-           during the lobby AND after every round.
       ================================================== -->
 
       <section
@@ -232,8 +226,53 @@
           >
 
 
-          <button id="sendChatBtn">
+          <!-- VOICE NOTE BUTTON -->
+
+          <button
+            id="voiceBtn"
+            type="button"
+            class="voiceBtn"
+            title="Record voice note"
+          >
+            🎙️
+          </button>
+
+
+          <!-- SEND BUTTON -->
+
+          <button
+            id="sendChatBtn"
+            type="button"
+          >
             SEND
+          </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             VOICE RECORDING STATUS
+        ================================================== -->
+
+        <div
+          id="voiceStatus"
+          class="voiceStatus hidden"
+        >
+
+          <span id="voiceTimer">
+            00:00
+          </span>
+
+          <span>
+            Recording...
+          </span>
+
+          <button
+            id="stopVoiceBtn"
+            type="button"
+            class="stopVoiceBtn"
+          >
+            ⏹ STOP
           </button>
 
         </div>
@@ -252,9 +291,7 @@
       >
 
 
-        <!-- ==================================================
-             TOP BAR
-        ================================================== -->
+        <!-- TOP BAR -->
 
         <div class="topbar card">
 
