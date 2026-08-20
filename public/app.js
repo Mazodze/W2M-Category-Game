@@ -18,11 +18,30 @@ let spinTimer;
 
 
 // ==================================================
+// VOICE RECORDING VARIABLES
+// ==================================================
+
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingTimer = null;
+let recordingSeconds = 0;
+let isRecording = false;
+let recordingStartTime = 0;
+
+
+// ==================================================
 // CONNECTION
 // ==================================================
 
 socket.on("connect", () => {
+
   myId = socket.id;
+
+  console.log(
+    "Connected:",
+    myId
+  );
+
 });
 
 
@@ -42,6 +61,24 @@ socket.on("errorMsg", message => {
 
 
 // ==================================================
+// VOICE ERROR
+// ==================================================
+
+socket.on("voiceError", message => {
+
+  console.error(
+    "Voice error:",
+    message
+  );
+
+  alert(message);
+
+  updateVoiceUI(false);
+
+});
+
+
+// ==================================================
 // CHAT VISIBILITY
 // ==================================================
 
@@ -53,17 +90,6 @@ function updateChatVisibility(state) {
     return;
   }
 
-
-  // Chat is visible ONLY during:
-  //
-  // 1. Lobby
-  // 2. Results
-  //
-  // It is hidden during:
-  //
-  // 3. Spinning
-  // 4. Playing
-
   const chatAllowed =
     state.status === "lobby" ||
     state.status === "results";
@@ -71,11 +97,21 @@ function updateChatVisibility(state) {
 
   if (chatAllowed) {
 
-    lobbyChat.classList.remove("hidden");
+    lobbyChat.classList.remove(
+      "hidden"
+    );
 
   } else {
 
-    lobbyChat.classList.add("hidden");
+    lobbyChat.classList.add(
+      "hidden"
+    );
+
+    if (isRecording) {
+
+      stopVoiceRecording();
+
+    }
 
   }
 
@@ -101,14 +137,13 @@ function clearChat() {
 
 
 // ==================================================
-// RECEIVE CHAT MESSAGE
+// RECEIVE NORMAL CHAT MESSAGE
 // ==================================================
 
 socket.on("chatMessage", data => {
 
   const chatMessages =
     $("chatMessages");
-
 
   if (!chatMessages) {
     return;
@@ -141,11 +176,261 @@ socket.on("chatMessage", data => {
   );
 
 
-  // Scroll to newest message
   chatMessages.scrollTop =
     chatMessages.scrollHeight;
 
 });
+
+
+// ==================================================
+// RECEIVE VOICE NOTE
+// ==================================================
+
+socket.on("voiceMessage", data => {
+
+  const chatMessages =
+    $("chatMessages");
+
+  if (!chatMessages) {
+    return;
+  }
+
+
+  console.log(
+    "Voice note received:",
+    data
+  );
+
+
+  // ==================================================
+  // CONVERT RECEIVED AUDIO TO BLOB URL
+  // ==================================================
+
+  let audioBlob;
+
+
+  try {
+
+    if (
+      data.audio instanceof ArrayBuffer
+    ) {
+
+      audioBlob =
+        new Blob(
+          [data.audio],
+          {
+            type:
+              data.mimeType ||
+              "audio/webm"
+          }
+        );
+
+    }
+
+    else if (
+      data.audio instanceof Uint8Array
+    ) {
+
+      audioBlob =
+        new Blob(
+          [data.audio],
+          {
+            type:
+              data.mimeType ||
+              "audio/webm"
+          }
+        );
+
+    }
+
+    else if (
+      data.audio &&
+      data.audio.type === "Buffer" &&
+      Array.isArray(data.audio.data)
+    ) {
+
+      audioBlob =
+        new Blob(
+          [
+            new Uint8Array(
+              data.audio.data
+            )
+          ],
+          {
+            type:
+              data.mimeType ||
+              "audio/webm"
+          }
+        );
+
+    }
+
+    else {
+
+      console.error(
+        "Unknown audio format:",
+        data.audio
+      );
+
+      return;
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not create audio blob:",
+      error
+    );
+
+    return;
+
+  }
+
+
+  const audioUrl =
+    URL.createObjectURL(
+      audioBlob
+    );
+
+
+  // ==================================================
+  // CREATE CHAT MESSAGE
+  // ==================================================
+
+  const message =
+    document.createElement("div");
+
+
+  message.className =
+    data.id === myId
+      ? "chatMessage own"
+      : "chatMessage";
+
+
+  const name =
+    document.createElement("div");
+
+  name.className =
+    "chatName";
+
+  name.textContent =
+    data.name;
+
+
+  const voiceContainer =
+    document.createElement("div");
+
+  voiceContainer.className =
+    "voiceMessage";
+
+
+  const icon =
+    document.createElement("span");
+
+  icon.className =
+    "voiceIcon";
+
+  icon.textContent =
+    "🎙️";
+
+
+  const audio =
+    document.createElement("audio");
+
+  audio.controls = true;
+
+  audio.preload =
+    "metadata";
+
+  audio.src =
+    audioUrl;
+
+
+  // Duration display
+  if (
+    data.duration &&
+    Number(data.duration) > 0
+  ) {
+
+    const duration =
+      document.createElement("span");
+
+    duration.className =
+      "voiceDuration";
+
+    duration.textContent =
+      formatDuration(
+        Number(data.duration)
+      );
+
+    voiceContainer.appendChild(
+      duration
+    );
+
+  }
+
+
+  voiceContainer.appendChild(
+    icon
+  );
+
+  voiceContainer.appendChild(
+    audio
+  );
+
+
+  message.appendChild(
+    name
+  );
+
+  message.appendChild(
+    voiceContainer
+  );
+
+
+  chatMessages.appendChild(
+    message
+  );
+
+
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+
+});
+
+
+// ==================================================
+// FORMAT VOICE DURATION
+// ==================================================
+
+function formatDuration(milliseconds) {
+
+  const totalSeconds =
+    Math.floor(
+      milliseconds / 1000
+    );
+
+
+  const minutes =
+    Math.floor(
+      totalSeconds / 60
+    );
+
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  return (
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(seconds).padStart(2, "0")
+  );
+
+}
 
 
 // ==================================================
@@ -156,7 +441,6 @@ function sendChatMessage() {
 
   const input =
     $("chatInput");
-
 
   if (!input) {
     return;
@@ -172,8 +456,6 @@ function sendChatMessage() {
   }
 
 
-  // Only send while chat
-  // is currently allowed
   if (
     !currentState ||
     (
@@ -181,7 +463,9 @@ function sendChatMessage() {
       currentState.status !== "results"
     )
   ) {
+
     return;
+
   }
 
 
@@ -250,17 +534,811 @@ if (chatInput) {
 
 
 // ==================================================
+// VOICE BUTTON
+// ==================================================
+
+const voiceBtn =
+  $("voiceBtn");
+
+
+if (voiceBtn) {
+
+  voiceBtn.addEventListener(
+    "click",
+    () => {
+
+      startVoiceRecording();
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// STOP VOICE BUTTON
+// ==================================================
+
+const stopVoiceBtn =
+  $("stopVoiceBtn");
+
+
+if (stopVoiceBtn) {
+
+  stopVoiceBtn.addEventListener(
+    "click",
+    () => {
+
+      stopVoiceRecording();
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// START VOICE RECORDING
+// ==================================================
+
+async function startVoiceRecording() {
+
+  console.log(
+    "Starting voice recording..."
+  );
+
+
+  // ==================================================
+  // CHECK GAME STATE
+  // ==================================================
+
+  if (
+    !currentState ||
+    (
+      currentState.status !== "lobby" &&
+      currentState.status !== "results"
+    )
+  ) {
+
+    alert(
+      "Voice notes are only available in the lobby and results."
+    );
+
+    return;
+
+  }
+
+
+  // ==================================================
+  // PREVENT DOUBLE RECORDING
+  // ==================================================
+
+  if (isRecording) {
+
+    return;
+
+  }
+
+
+  // ==================================================
+  // CHECK MICROPHONE SUPPORT
+  // ==================================================
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    alert(
+      "Your browser does not support microphone access."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !window.MediaRecorder
+  ) {
+
+    alert(
+      "Your browser does not support voice recording."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    // ==================================================
+    // REQUEST MICROPHONE
+    // ==================================================
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+
+
+    console.log(
+      "Microphone permission granted."
+    );
+
+
+    audioChunks = [];
+
+
+    // ==================================================
+    // SELECT SUPPORTED AUDIO FORMAT
+    // ==================================================
+
+    let mimeType =
+      "";
+
+
+    const formats = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/mp4"
+    ];
+
+
+    for (
+      const format of formats
+    ) {
+
+      if (
+        MediaRecorder.isTypeSupported(
+          format
+        )
+      ) {
+
+        mimeType =
+          format;
+
+        break;
+
+      }
+
+    }
+
+
+    console.log(
+      "Selected audio format:",
+      mimeType || "browser default"
+    );
+
+
+    // ==================================================
+    // CREATE MEDIA RECORDER
+    // ==================================================
+
+    if (mimeType) {
+
+      mediaRecorder =
+        new MediaRecorder(
+          stream,
+          {
+            mimeType:
+              mimeType
+          }
+        );
+
+    } else {
+
+      mediaRecorder =
+        new MediaRecorder(
+          stream
+        );
+
+    }
+
+
+    // ==================================================
+    // AUDIO DATA
+    // ==================================================
+
+    mediaRecorder.ondataavailable =
+      event => {
+
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
+
+          audioChunks.push(
+            event.data
+          );
+
+        }
+
+      };
+
+
+    // ==================================================
+    // RECORDING STARTED
+    // ==================================================
+
+    mediaRecorder.onstart =
+      () => {
+
+        console.log(
+          "Recording started."
+        );
+
+      };
+
+
+    // ==================================================
+    // RECORDING STOPPED
+    // ==================================================
+
+    mediaRecorder.onstop =
+      async () => {
+
+        console.log(
+          "Recording stopped."
+        );
+
+
+        // Stop microphone
+        stream
+          .getTracks()
+          .forEach(
+            track => track.stop()
+          );
+
+
+        clearInterval(
+          recordingTimer
+        );
+
+        recordingTimer =
+          null;
+
+
+        isRecording =
+          false;
+
+
+        updateVoiceUI(
+          false
+        );
+
+
+        // ==================================================
+        // CHECK AUDIO
+        // ==================================================
+
+        if (
+          audioChunks.length === 0
+        ) {
+
+          console.warn(
+            "No audio data recorded."
+          );
+
+          return;
+
+        }
+
+
+        // ==================================================
+        // CREATE AUDIO BLOB
+        // ==================================================
+
+        const finalMimeType =
+          mediaRecorder.mimeType ||
+          mimeType ||
+          "audio/webm";
+
+
+        const audioBlob =
+          new Blob(
+            audioChunks,
+            {
+              type:
+                finalMimeType
+            }
+          );
+
+
+        console.log(
+          "Audio size:",
+          audioBlob.size,
+          "bytes"
+        );
+
+
+        console.log(
+          "Audio type:",
+          audioBlob.type
+        );
+
+
+        // ==================================================
+        // SEND AUDIO
+        // ==================================================
+
+        await sendVoiceMessage(
+          audioBlob,
+          finalMimeType
+        );
+
+      };
+
+
+    // ==================================================
+    // HANDLE RECORDER ERROR
+    // ==================================================
+
+    mediaRecorder.onerror =
+      event => {
+
+        console.error(
+          "MediaRecorder error:",
+          event.error
+        );
+
+        stream
+          .getTracks()
+          .forEach(
+            track => track.stop()
+          );
+
+        isRecording =
+          false;
+
+        updateVoiceUI(
+          false
+        );
+
+      };
+
+
+    // ==================================================
+    // START RECORDING
+    // ==================================================
+
+    mediaRecorder.start(
+      250
+    );
+
+
+    isRecording =
+      true;
+
+
+    recordingSeconds =
+      0;
+
+
+    recordingStartTime =
+      Date.now();
+
+
+    updateVoiceTimer();
+
+
+    updateVoiceUI(
+      true
+    );
+
+
+    // ==================================================
+    // TIMER
+    // ==================================================
+
+    recordingTimer =
+      setInterval(
+        () => {
+
+          recordingSeconds =
+            Math.floor(
+              (
+                Date.now() -
+                recordingStartTime
+              ) / 1000
+            );
+
+
+          updateVoiceTimer();
+
+
+          // Server accepts max 30 seconds
+          if (
+            recordingSeconds >= 30
+          ) {
+
+            stopVoiceRecording();
+
+          }
+
+        },
+        250
+      );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Microphone error:",
+      error
+    );
+
+
+    if (
+      error.name ===
+      "NotAllowedError"
+    ) {
+
+      alert(
+        "Microphone permission was denied. Please allow microphone access."
+      );
+
+    }
+
+    else if (
+      error.name ===
+      "NotFoundError"
+    ) {
+
+      alert(
+        "No microphone was found. Check that your microphone is connected."
+      );
+
+    }
+
+    else if (
+      error.name ===
+      "NotReadableError"
+    ) {
+
+      alert(
+        "Your microphone is already being used by another application."
+      );
+
+    }
+
+    else if (
+      error.name ===
+      "SecurityError"
+    ) {
+
+      alert(
+        "The browser blocked microphone access. Run the game through localhost in VS Code."
+      );
+
+    }
+
+    else {
+
+      alert(
+        "Could not access your microphone: " +
+        error.message
+      );
+
+    }
+
+  }
+
+}
+
+
+// ==================================================
+// STOP VOICE RECORDING
+// ==================================================
+
+function stopVoiceRecording() {
+
+  console.log(
+    "Stopping voice recording..."
+  );
+
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !== "inactive"
+  ) {
+
+    mediaRecorder.stop();
+
+  }
+
+
+  clearInterval(
+    recordingTimer
+  );
+
+  recordingTimer =
+    null;
+
+}
+
+
+// ==================================================
+// UPDATE VOICE UI
+// ==================================================
+
+function updateVoiceUI(
+  recording
+) {
+
+  const voiceBtn =
+    $("voiceBtn");
+
+
+  const voiceStatus =
+    $("voiceStatus");
+
+
+  const stopVoiceBtn =
+    $("stopVoiceBtn");
+
+
+  if (recording) {
+
+    if (voiceBtn) {
+
+      voiceBtn.disabled =
+        true;
+
+      voiceBtn.textContent =
+        "🔴";
+
+    }
+
+
+    if (voiceStatus) {
+
+      voiceStatus.classList.remove(
+        "hidden"
+      );
+
+    }
+
+
+    if (stopVoiceBtn) {
+
+      stopVoiceBtn.disabled =
+        false;
+
+    }
+
+  }
+
+  else {
+
+    if (voiceBtn) {
+
+      voiceBtn.disabled =
+        false;
+
+      voiceBtn.textContent =
+        "🎙️";
+
+    }
+
+
+    if (voiceStatus) {
+
+      voiceStatus.classList.add(
+        "hidden"
+      );
+
+    }
+
+
+    if (stopVoiceBtn) {
+
+      stopVoiceBtn.disabled =
+        false;
+
+    }
+
+
+    recordingSeconds =
+      0;
+
+    updateVoiceTimer();
+
+  }
+
+}
+
+
+// ==================================================
+// VOICE TIMER
+// ==================================================
+
+function updateVoiceTimer() {
+
+  const timer =
+    $("voiceTimer");
+
+
+  if (!timer) {
+    return;
+  }
+
+
+  const minutes =
+    Math.floor(
+      recordingSeconds / 60
+    );
+
+
+  const seconds =
+    recordingSeconds % 60;
+
+
+  timer.textContent =
+    String(minutes).padStart(
+      2,
+      "0"
+    ) +
+    ":" +
+    String(seconds).padStart(
+      2,
+      "0"
+    );
+
+}
+
+
+// ==================================================
+// SEND VOICE MESSAGE
+// ==================================================
+
+async function sendVoiceMessage(
+  audioBlob,
+  mimeType
+) {
+
+  console.log(
+    "Preparing voice note..."
+  );
+
+
+  // ==================================================
+  // CHECK STATE
+  // ==================================================
+
+  if (
+    !currentState ||
+    (
+      currentState.status !== "lobby" &&
+      currentState.status !== "results"
+    )
+  ) {
+
+    console.warn(
+      "Voice note blocked because chat is disabled."
+    );
+
+    return;
+
+  }
+
+
+  // ==================================================
+  // CHECK SIZE
+  // ==================================================
+
+  if (
+    audioBlob.size <= 0
+  ) {
+
+    console.error(
+      "Empty audio blob."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    audioBlob.size >
+    5 * 1024 * 1024
+  ) {
+
+    alert(
+      "Voice note is too large. Please record a shorter note."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    // ==================================================
+    // GET ARRAY BUFFER
+    // ==================================================
+
+    const arrayBuffer =
+      await audioBlob.arrayBuffer();
+
+
+    console.log(
+      "Sending audio:",
+      arrayBuffer.byteLength,
+      "bytes"
+    );
+
+
+    // ==================================================
+    // CALCULATE DURATION
+    // ==================================================
+
+    const duration =
+      Date.now() -
+      recordingStartTime;
+
+
+    // ==================================================
+    // SEND BINARY AUDIO
+    // ==================================================
+
+    socket.emit(
+      "voiceMessage",
+      {
+        audio:
+          arrayBuffer,
+
+        mimeType:
+          mimeType ||
+          audioBlob.type ||
+          "audio/webm",
+
+        duration:
+          duration
+      }
+    );
+
+
+    console.log(
+      "Voice note sent."
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Voice message error:",
+      error
+    );
+
+    alert(
+      "Could not send the voice note."
+    );
+
+  }
+
+}
+
+
+// ==================================================
 // GAME STATE
 // ==================================================
 
 socket.on("state", state => {
 
-  currentState = state;
+  currentState =
+    state;
 
-
-  // ==================================================
-  // UPDATE CHAT VISIBILITY
-  // ==================================================
 
   updateChatVisibility(
     state
@@ -273,6 +1351,7 @@ socket.on("state", state => {
 
   const roomTag =
     $("roomTag");
+
 
   if (roomTag) {
 
@@ -287,6 +1366,7 @@ socket.on("state", state => {
   const code =
     $("code");
 
+
   if (code) {
 
     code.textContent =
@@ -298,6 +1378,7 @@ socket.on("state", state => {
   const gameCode =
     $("gameCode");
 
+
   if (gameCode) {
 
     gameCode.textContent =
@@ -307,7 +1388,7 @@ socket.on("state", state => {
 
 
   // ==================================================
-  // SHOW PLAYERS
+  // PLAYERS
   // ==================================================
 
   const players =
@@ -393,7 +1474,9 @@ socket.on("state", state => {
 
     show("game");
 
-    renderGame(state);
+    renderGame(
+      state
+    );
 
   }
 
@@ -435,6 +1518,7 @@ function esc(value) {
         "'": "&#39;"
 
       };
+
 
       return replacements[
         character
@@ -505,14 +1589,14 @@ if (hostBtn) {
       "Host";
 
 
-    // Clear old chat
     clearChat();
 
 
     socket.emit(
       "host",
       {
-        name: name
+        name:
+          name
       }
     );
 
@@ -577,6 +1661,7 @@ if (joinBtn) {
 
       }
 
+
       return;
 
     }
@@ -585,8 +1670,11 @@ if (joinBtn) {
     socket.emit(
       "join",
       {
-        code: code,
-        name: name
+        code:
+          code,
+
+        name:
+          name
       }
     );
 
@@ -678,8 +1766,16 @@ function renderGame(state) {
     state.status === "spinning"
   ) {
 
-    $("statusText").textContent =
-      "SPINNING…";
+    const statusText =
+      $("statusText");
+
+
+    if (statusText) {
+
+      statusText.textContent =
+        "SPINNING…";
+
+    }
 
 
     show("spinner");
@@ -688,10 +1784,14 @@ function renderGame(state) {
 
     hide("results");
 
-
-    // Hide chat
-    // while spinning
     hide("lobbyChat");
+
+
+    if (isRecording) {
+
+      stopVoiceRecording();
+
+    }
 
 
     animateSpin();
@@ -707,8 +1807,16 @@ function renderGame(state) {
     state.status === "playing"
   ) {
 
-    $("statusText").textContent =
-      "GO!";
+    const statusText =
+      $("statusText");
+
+
+    if (statusText) {
+
+      statusText.textContent =
+        "GO!";
+
+    }
 
 
     hide("spinner");
@@ -717,10 +1825,14 @@ function renderGame(state) {
 
     hide("results");
 
-
-    // Hide chat
-    // during gameplay
     hide("lobbyChat");
+
+
+    if (isRecording) {
+
+      stopVoiceRecording();
+
+    }
 
 
     const fields =
@@ -733,7 +1845,8 @@ function renderGame(state) {
       state.letter
     ) {
 
-      fieldsBuilt = false;
+      fieldsBuilt =
+        false;
 
     }
 
@@ -749,7 +1862,8 @@ function renderGame(state) {
 
     if (stopBtn) {
 
-      stopBtn.disabled = false;
+      stopBtn.disabled =
+        false;
 
     }
 
@@ -764,8 +1878,16 @@ function renderGame(state) {
     state.status === "results"
   ) {
 
-    $("statusText").textContent =
-      "ROUND RESULTS";
+    const statusText =
+      $("statusText");
+
+
+    if (statusText) {
+
+      statusText.textContent =
+        "ROUND RESULTS";
+
+    }
 
 
     hide("spinner");
@@ -774,9 +1896,6 @@ function renderGame(state) {
 
     show("results");
 
-
-    // SHOW CHAT
-    // after round ends
     show("lobbyChat");
 
   }
@@ -810,7 +1929,8 @@ function buildFields(letter) {
   }
 
 
-  fieldsBuilt = true;
+  fieldsBuilt =
+    true;
 
 
   fields.dataset.letter =
@@ -856,7 +1976,8 @@ function animateSpin() {
   );
 
 
-  let index = 0;
+  let index =
+    0;
 
 
   const letters =
@@ -896,21 +2017,24 @@ function animateSpin() {
 
 function getAnswers() {
 
-  const answers = {};
+  const answers =
+    {};
 
 
   document
     .querySelectorAll(
       ".answerInput"
     )
-    .forEach(input => {
+    .forEach(
+      input => {
 
-      answers[
-        input.dataset.cat
-      ] =
-        input.value.trim();
+        answers[
+          input.dataset.cat
+        ] =
+          input.value.trim();
 
-    });
+      }
+    );
 
 
   return answers;
@@ -933,14 +2057,11 @@ document.addEventListener(
       )
     ) {
 
-      const answers =
-        getAnswers();
-
-
       socket.emit(
         "syncAnswers",
         {
-          answers: answers
+          answers:
+            getAnswers()
         }
       );
 
@@ -973,7 +2094,8 @@ if (stopBtn) {
     socket.emit(
       "stop",
       {
-        answers: answers
+        answers:
+          answers
       }
     );
 
@@ -986,7 +2108,9 @@ if (stopBtn) {
 // RENDER RESULTS
 // ==================================================
 
-function renderResults(results) {
+function renderResults(
+  results
+) {
 
   let html = `
     <p class="winner">
@@ -1015,7 +2139,7 @@ function renderResults(results) {
 
 
   // ==================================================
-  // SHOW EVERY PLAYER'S ANSWERS
+  // SHOW ANSWERS
   // ==================================================
 
   for (
@@ -1105,7 +2229,6 @@ function renderResults(results) {
   }
 
 
-  // STOP BUTTON
   if (stopBtn) {
 
     stopBtn.disabled =
@@ -1113,10 +2236,6 @@ function renderResults(results) {
 
   }
 
-
-  // ==================================================
-  // SHOW CHAT AFTER ROUND
-  // ==================================================
 
   show("lobbyChat");
 
