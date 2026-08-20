@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
   <meta charset="utf-8">
 
   <meta
@@ -9,18 +10,24 @@
     content="width=device-width, initial-scale=1"
   >
 
-  <title>Letter Rush — Multiplayer Prototype</title>
+  <title>Letter Rush — Multiplayer</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
   <div class="app">
 
-    <!-- =========================
+
+    <!-- ==================================================
          HEADER
-    ========================== -->
+    ================================================== -->
 
     <header>
 
@@ -35,18 +42,27 @@
 
     <main>
 
-      <!-- =========================
+
+      <!-- ==================================================
            HOME
-      ========================== -->
+      ================================================== -->
 
-      <section id="home" class="card">
+      <section
+        id="home"
+        class="card"
+      >
 
-        <h1>Multiplayer Category Game</h1>
+        <h1>
+          Multiplayer Category Game
+        </h1>
+
 
         <p class="muted">
-          Create a room, invite friends with a 5-digit
-          code, spin a letter, and race to complete
-          the categories.
+
+          Create a room, invite friends with a
+          5-digit code, spin a letter, and race
+          to complete the categories.
+
         </p>
 
 
@@ -64,6 +80,7 @@
           <button id="hostBtn">
             HOST GAME
           </button>
+
 
           <button
             id="showJoin"
@@ -91,6 +108,7 @@
             placeholder="5-digit room code"
           >
 
+
           <button id="joinBtn">
             JOIN ROOM
           </button>
@@ -107,18 +125,19 @@
 
 
 
-      <!-- =========================
+      <!-- ==================================================
            LOBBY
-      ========================== -->
+      ================================================== -->
 
       <section
         id="lobby"
         class="lobby hidden"
       >
 
-        <!-- =========================
+
+        <!-- ==================================================
              PLAYERS
-        ========================== -->
+        ================================================== -->
 
         <div class="card lobbyPlayers">
 
@@ -140,8 +159,11 @@
 
 
           <p class="muted">
+
             Share the code with your friends.
+
             The host starts the game.
+
           </p>
 
 
@@ -151,57 +173,68 @@
 
         </div>
 
+      </section>
 
 
-        <!-- =========================
-             LOBBY CHAT
-        ========================== -->
 
-        <div class="card lobbyChat">
+      <!-- ==================================================
+           CHAT
+           
+           IMPORTANT:
+           Chat is OUTSIDE the lobby so it can appear
+           during the lobby AND after every round.
+      ================================================== -->
 
-          <div class="chatHeader">
+      <section
+        id="lobbyChat"
+        class="card lobbyChat hidden"
+      >
 
-            <div>
+        <div class="chatHeader">
 
-              <h2>
-                💬 Lobby Chat
-              </h2>
+          <div>
 
-              <p class="muted">
-                Chat with players in this room
-              </p>
+            <h2>
+              💬 Game Chat
+            </h2>
 
-            </div>
-
-          </div>
-
-
-          <!-- Messages appear here -->
-
-          <div
-            id="chatMessages"
-            class="chatMessages"
-          ></div>
-
-
-          <!-- Chat input -->
-
-          <div class="chatInputArea">
-
-            <input
-              id="chatInput"
-              type="text"
-              maxlength="200"
-              autocomplete="off"
-              placeholder="Type a message..."
-            >
-
-
-            <button id="sendChatBtn">
-              SEND
-            </button>
+            <p class="muted">
+              Chat with players in this room
+            </p>
 
           </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CHAT MESSAGES
+        ================================================== -->
+
+        <div
+          id="chatMessages"
+          class="chatMessages"
+        ></div>
+
+
+        <!-- ==================================================
+             CHAT INPUT
+        ================================================== -->
+
+        <div class="chatInputArea">
+
+          <input
+            id="chatInput"
+            type="text"
+            maxlength="200"
+            autocomplete="off"
+            placeholder="Type a message..."
+          >
+
+
+          <button id="sendChatBtn">
+            SEND
+          </button>
 
         </div>
 
@@ -209,16 +242,19 @@
 
 
 
-      <!-- =========================
+      <!-- ==================================================
            GAME
-      ========================== -->
+      ================================================== -->
 
       <section
         id="game"
         class="hidden"
       >
 
-        <!-- TOP BAR -->
+
+        <!-- ==================================================
+             TOP BAR
+        ================================================== -->
 
         <div class="topbar card">
 
@@ -256,9 +292,9 @@
 
 
 
-        <!-- =========================
+        <!-- ==================================================
              SPINNER
-        ========================== -->
+        ================================================== -->
 
         <div
           id="spinner"
@@ -269,6 +305,7 @@
             A
           </div>
 
+
           <p>
             Spinning…
           </p>
@@ -277,9 +314,9 @@
 
 
 
-        <!-- =========================
+        <!-- ==================================================
              ANSWERS
-        ========================== -->
+        ================================================== -->
 
         <div
           id="answers"
@@ -292,8 +329,11 @@
 
 
           <p class="muted">
+
             Every answer must begin with
+
             <b id="letterHint"></b>.
+
           </p>
 
 
@@ -311,9 +351,9 @@
 
 
 
-        <!-- =========================
+        <!-- ==================================================
              RESULTS
-        ========================== -->
+        ================================================== -->
 
         <div
           id="results"
@@ -341,11 +381,16 @@
   </div>
 
 
-  <!-- SOCKET.IO -->
+  <!-- ==================================================
+       SOCKET.IO
+  ================================================== -->
 
   <script src="/socket.io/socket.io.js"></script>
 
-  <!-- YOUR GAME JAVASCRIPT -->
+
+  <!-- ==================================================
+       GAME JAVASCRIPT
+  ================================================== -->
 
   <script src="app.js"></script>
 
