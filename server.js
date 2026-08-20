@@ -53,6 +53,99 @@ function generateRoomCode() {
 
 
 // ==================================================
+// SHUFFLE LETTERS
+// ==================================================
+//
+// Creates a completely random order of
+// A-Z using the Fisher-Yates algorithm.
+//
+// Example:
+//
+// Q → B → M → A → Z → C → ...
+//
+// Every letter appears exactly once.
+//
+
+function shuffleLetters() {
+
+  const shuffled =
+    [...LETTERS];
+
+
+  for (
+    let i = shuffled.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+
+    [
+      shuffled[i],
+      shuffled[j]
+    ] =
+    [
+      shuffled[j],
+      shuffled[i]
+    ];
+
+  }
+
+
+  return shuffled;
+}
+
+
+// ==================================================
+// GET NEXT LETTER
+// ==================================================
+//
+// Takes the next unused letter from the room's
+// current letter pool.
+//
+// When the pool becomes empty, a new shuffled
+// alphabet is automatically created.
+//
+
+function getNextLetter(room) {
+
+  // Create a new shuffled alphabet
+  // when there is no pool yet.
+  if (
+    !room.letterPool ||
+    room.letterPool.length === 0
+  ) {
+
+    room.letterPool =
+      shuffleLetters();
+
+
+    console.log(
+      `Room ${room.code}: New 26-letter cycle started.`
+    );
+
+  }
+
+
+  // Remove and return the first unused letter.
+  //
+  // Because shift() removes the letter from
+  // the pool, that letter cannot be selected
+  // again during this cycle.
+
+  const nextLetter =
+    room.letterPool.shift();
+
+
+  return nextLetter;
+}
+
+
+// ==================================================
 // GET ROOM STATE
 // ==================================================
 
@@ -90,7 +183,9 @@ function getRoomState(room) {
         score: player.score
 
       }))
+
   };
+
 }
 
 
@@ -137,26 +232,32 @@ function startRound(room) {
     ) {
 
       return;
+
     }
 
 
-    // Pick random letter
+    // ==================================================
+    // GET NON-REPEATING LETTER
+    // ==================================================
+
     room.letter =
-      LETTERS[
-        Math.floor(
-          Math.random() *
-          LETTERS.length
-        )
-      ];
+      getNextLetter(room);
 
 
-    room.status = "playing";
+    console.log(
+      `Room ${room.code}: Letter = ${room.letter}`
+    );
+
+
+    room.status =
+      "playing";
 
 
     // Chat and voice notes remain disabled
     broadcastRoom(room);
 
   }, 2600);
+
 }
 
 
@@ -207,6 +308,21 @@ io.on("connection", socket => {
         answers: {},
 
 
+        // ==================================================
+        // LETTER POOL
+        // ==================================================
+        //
+        // This contains the unused letters for the
+        // current 26-letter cycle.
+        //
+        // It starts empty and is automatically filled
+        // with a shuffled alphabet when the first round
+        // starts.
+        //
+
+        letterPool: [],
+
+
         players:
           new Map([
             [
@@ -222,6 +338,7 @@ io.on("connection", socket => {
               }
             ]
           ])
+
       };
 
 
@@ -234,6 +351,7 @@ io.on("connection", socket => {
       socket.join(
         roomCode
       );
+
 
       socket.data.room =
         roomCode;
@@ -334,6 +452,7 @@ io.on("connection", socket => {
       socket.join(
         room.code
       );
+
 
       socket.data.room =
         room.code;
@@ -507,7 +626,8 @@ io.on("connection", socket => {
         Buffer.isBuffer(audio)
       ) {
 
-        audioBuffer = audio;
+        audioBuffer =
+          audio;
 
       }
 
@@ -864,6 +984,7 @@ io.on("connection", socket => {
       );
 
     }
+
   );
 
 });
