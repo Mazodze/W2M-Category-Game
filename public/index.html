@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Letter Rush — Multiplayer Prototype</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header>
+
+      <div class="brand">
+        LETTER<span>RUSH</span>
+      </div>
+
+      <div id="roomTag"></div>
+
+    </header>
+
+
+    <main>
+
+      <!-- =========================
+           HOME
+      ========================== -->
+
+      <section id="home" class="card">
+
+        <h1>Multiplayer Category Game</h1>
+
+        <p class="muted">
+          Create a room, invite friends with a 5-digit
+          code, spin a letter, and race to complete
+          the categories.
+        </p>
+
+
+        <input
+          id="name"
+          type="text"
+          maxlength="18"
+          autocomplete="off"
+          placeholder="Your name"
+        >
+
+
+        <div class="actions">
+
+          <button id="hostBtn">
+            HOST GAME
+          </button>
+
+          <button
+            id="showJoin"
+            class="secondary"
+          >
+            JOIN GAME
+          </button>
+
+        </div>
+
+
+        <!-- JOIN ROOM -->
+
+        <div
+          id="joinBox"
+          class="hidden"
+        >
+
+          <input
+            id="joinCode"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            autocomplete="off"
+            placeholder="5-digit room code"
+          >
+
+          <button id="joinBtn">
+            JOIN ROOM
+          </button>
+
+        </div>
+
+
+        <p
+          id="error"
+          class="error"
+        ></p>
+
+      </section>
+
+
+
+      <!-- =========================
+           LOBBY
+      ========================== -->
+
+      <section
+        id="lobby"
+        class="lobby hidden"
+      >
+
+        <!-- =========================
+             PLAYERS
+        ========================== -->
+
+        <div class="card lobbyPlayers">
+
+          <div class="code">
+
+            ROOM CODE
+
+            <strong id="code"></strong>
+
+          </div>
+
+
+          <h2>
+            Players
+          </h2>
+
+
+          <div id="players"></div>
+
+
+          <p class="muted">
+            Share the code with your friends.
+            The host starts the game.
+          </p>
+
+
+          <button id="startBtn">
+            START GAME
+          </button>
+
+        </div>
+
+
+
+        <!-- =========================
+             LOBBY CHAT
+        ========================== -->
+
+        <div class="card lobbyChat">
+
+          <div class="chatHeader">
+
+            <div>
+
+              <h2>
+                💬 Lobby Chat
+              </h2>
+
+              <p class="muted">
+                Chat with players in this room
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- Messages appear here -->
+
+          <div
+            id="chatMessages"
+            class="chatMessages"
+          ></div>
+
+
+          <!-- Chat input -->
+
+          <div class="chatInputArea">
+
+            <input
+              id="chatInput"
+              type="text"
+              maxlength="200"
+              autocomplete="off"
+              placeholder="Type a message..."
+            >
+
+
+            <button id="sendChatBtn">
+              SEND
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- =========================
+           GAME
+      ========================== -->
+
+      <section
+        id="game"
+        class="hidden"
+      >
+
+        <!-- TOP BAR -->
+
+        <div class="topbar card">
+
+          <div>
+
+            <span class="muted">
+              LETTER
+            </span>
+
+            <div id="letter">
+              —
+            </div>
+
+          </div>
+
+
+          <div id="statusText">
+            Waiting…
+          </div>
+
+
+          <div>
+
+            <span class="muted">
+              ROOM
+            </span>
+
+            <div id="gameCode">
+              —
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             SPINNER
+        ========================== -->
+
+        <div
+          id="spinner"
+          class="card hidden"
+        >
+
+          <div id="spinLetter">
+            A
+          </div>
+
+          <p>
+            Spinning…
+          </p>
+
+        </div>
+
+
+
+        <!-- =========================
+             ANSWERS
+        ========================== -->
+
+        <div
+          id="answers"
+          class="card hidden"
+        >
+
+          <h2>
+            Fill the boxes
+          </h2>
+
+
+          <p class="muted">
+            Every answer must begin with
+            <b id="letterHint"></b>.
+          </p>
+
+
+          <div id="fields"></div>
+
+
+          <button
+            id="stopBtn"
+            class="stop"
+          >
+            STOP!
+          </button>
+
+        </div>
+
+
+
+        <!-- =========================
+             RESULTS
+        ========================== -->
+
+        <div
+          id="results"
+          class="card hidden"
+        >
+
+          <h2>
+            Round Results
+          </h2>
+
+
+          <div id="resultText"></div>
+
+
+          <button id="nextBtn">
+            NEXT ROUND
+          </button>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- SOCKET.IO -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- YOUR GAME JAVASCRIPT -->
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>

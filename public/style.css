@@ -1,0 +1,855 @@
+/* =========================
+   GLOBAL
+========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+
+  font-family: Inter, system-ui, Arial, sans-serif;
+
+  background: #07111f;
+  color: #f5f7fb;
+
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  width: 100%;
+  max-width: 1000px;
+
+  margin: 0 auto;
+  padding: 20px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 0 25px;
+
+  gap: 15px;
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.brand span {
+  color: #54a8ff;
+}
+
+#roomTag {
+  color: #9eafc3;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   LAYOUT
+========================= */
+
+main {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+  width: 100%;
+
+  background: #0d1b2d;
+
+  border: 1px solid #1c3048;
+  border-radius: 20px;
+
+  padding: 24px;
+
+  box-shadow: 0 10px 35px #0003;
+}
+
+
+/* =========================
+   TEXT
+========================= */
+
+h1 {
+  font-size: 38px;
+  line-height: 1.1;
+
+  margin: 0 0 10px;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+p {
+  margin-top: 0;
+}
+
+.muted {
+  color: #9eafc3;
+  line-height: 1.5;
+}
+
+
+/* =========================
+   INPUTS
+========================= */
+
+input {
+  width: 100%;
+
+  padding: 14px 15px;
+  margin: 8px 0;
+
+  border: 1px solid #2b435f;
+
+  background: #081522;
+  color: white;
+
+  border-radius: 12px;
+
+  font-size: 16px;
+
+  outline: none;
+
+  -webkit-appearance: none;
+}
+
+input:focus {
+  border-color: #3185ff;
+  box-shadow: 0 0 0 2px rgba(49, 133, 255, 0.12);
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.actions {
+  display: flex;
+  gap: 10px;
+
+  margin-top: 8px;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+
+  min-height: 48px;
+
+  padding: 14px 18px;
+
+  background: #3185ff;
+  color: white;
+
+  font-weight: 800;
+  font-size: 15px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.secondary {
+  background: #20334b;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =========================
+   GENERAL
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+.error {
+  color: #ff7777;
+  min-height: 20px;
+}
+
+
+/* =========================
+   ROOM CODE
+========================= */
+
+.code {
+  font-size: 14px;
+  color: #9eafc3;
+}
+
+.code strong {
+  display: block;
+
+  font-size: 42px;
+
+  letter-spacing: 8px;
+
+  color: white;
+
+  margin: 6px 0 20px;
+}
+
+
+/* =========================
+   PLAYERS
+========================= */
+
+.player {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 13px 15px;
+
+  border-radius: 12px;
+
+  background: #091624;
+
+  margin: 8px 0;
+
+  min-height: 48px;
+
+  overflow: hidden;
+}
+
+.player span {
+  min-width: 0;
+}
+
+.player span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================
+   LOBBY
+========================= */
+
+.lobby {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 20px;
+
+  width: 100%;
+}
+
+
+/* =========================
+   LOBBY CHAT
+========================= */
+
+.lobbyChat {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 480px;
+}
+
+
+/* =========================
+   CHAT HEADER
+========================= */
+
+.chatHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.chatHeader h2 {
+  margin: 0 0 4px;
+}
+
+.chatHeader .muted {
+  margin: 0;
+}
+
+
+/* =========================
+   CHAT MESSAGES
+========================= */
+
+.chatMessages {
+  flex: 1;
+
+  min-height: 300px;
+  max-height: 350px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  background: rgba(0, 0, 0, 0.12);
+
+  border-radius: 10px;
+
+  overscroll-behavior: contain;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* Scrollbar */
+
+.chatMessages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatMessages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatMessages::-webkit-scrollbar-thumb {
+  background: #29415c;
+  border-radius: 10px;
+}
+
+
+/* =========================
+   CHAT MESSAGE
+========================= */
+
+.chatMessage {
+  align-self: flex-start;
+
+  max-width: 85%;
+
+  padding: 8px 12px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  word-break: break-word;
+
+  overflow-wrap: anywhere;
+}
+
+.chatMessage.own {
+  align-self: flex-end;
+
+  background: rgba(49, 133, 255, 0.25);
+}
+
+.chatName {
+  font-size: 12px;
+
+  font-weight: 700;
+
+  margin-bottom: 3px;
+
+  opacity: 0.75;
+}
+
+.chatText {
+  font-size: 14px;
+
+  line-height: 1.4;
+
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================
+   CHAT INPUT
+========================= */
+
+.chatInputArea {
+  display: flex;
+
+  gap: 8px;
+
+  margin-top: 12px;
+
+  width: 100%;
+}
+
+.chatInputArea input {
+  flex: 1;
+
+  min-width: 0;
+
+  margin: 0;
+}
+
+.chatInputArea button {
+  flex-shrink: 0;
+
+  min-width: 90px;
+}
+
+
+/* =========================
+   GAME TOP BAR
+========================= */
+
+.topbar {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  text-align: center;
+
+  gap: 15px;
+}
+
+.topbar > div {
+  min-width: 0;
+}
+
+.topbar #letter {
+  font-size: 45px;
+  font-weight: 900;
+}
+
+.topbar #gameCode {
+  font-weight: 800;
+}
+
+
+/* =========================
+   SPINNER
+========================= */
+
+.spinner {
+  text-align: center;
+}
+
+.spinner #spinLetter {
+  font-size: 100px;
+  font-weight: 1000;
+
+  line-height: 1;
+}
+
+
+/* =========================
+   ANSWER FIELDS
+========================= */
+
+.field {
+  margin: 12px 0;
+}
+
+.field label {
+  display: block;
+
+  color: #b7c7d8;
+
+  font-weight: 700;
+
+  margin-bottom: 5px;
+}
+
+.answerInput {
+  margin: 0;
+}
+
+
+/* =========================
+   STOP BUTTON
+========================= */
+
+.stop {
+  width: 100%;
+
+  min-height: 58px;
+
+  background: #e74c3c;
+
+  font-size: 20px;
+
+  margin-top: 10px;
+}
+
+
+/* =========================
+   RESULTS
+========================= */
+
+.resultRow {
+  padding: 13px;
+
+  border-bottom: 1px solid #1c3048;
+}
+
+.answer {
+  display: inline-block;
+
+  margin: 4px 5px 0 0;
+
+  padding: 6px 9px;
+
+  background: #142940;
+
+  border-radius: 8px;
+
+  word-break: break-word;
+}
+
+.winner {
+  font-weight: 900;
+
+  color: #62d391;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 800px) {
+
+  .app {
+    padding: 16px;
+  }
+
+  .lobby {
+    grid-template-columns: 1fr;
+  }
+
+  .lobbyChat {
+    min-height: 420px;
+  }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  body {
+    min-width: 0;
+  }
+
+  .app {
+    padding: 10px;
+  }
+
+
+  header {
+    padding: 8px 2px 16px;
+  }
+
+
+  .brand {
+    font-size: 20px;
+  }
+
+
+  #roomTag {
+    font-size: 12px;
+  }
+
+
+  .card {
+    padding: 18px;
+
+    border-radius: 16px;
+  }
+
+
+  h1 {
+    font-size: 29px;
+  }
+
+
+  h2 {
+    font-size: 22px;
+  }
+
+
+  .actions {
+    flex-direction: column;
+  }
+
+
+  .actions button {
+    width: 100%;
+  }
+
+
+  button {
+    min-height: 50px;
+  }
+
+
+  /* Room code */
+
+  .code strong {
+    font-size: 34px;
+    letter-spacing: 5px;
+
+    overflow-wrap: anywhere;
+  }
+
+
+  /* Lobby */
+
+  .lobby {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+
+  .lobbyChat {
+    min-height: 390px;
+  }
+
+
+  /* Chat */
+
+  .chatMessages {
+    min-height: 210px;
+    max-height: 260px;
+
+    padding: 8px;
+  }
+
+
+  .chatMessage {
+    max-width: 90%;
+  }
+
+
+  .chatInputArea {
+    gap: 8px;
+  }
+
+
+  .chatInputArea input {
+    font-size: 16px;
+  }
+
+
+  .chatInputArea button {
+    min-width: 82px;
+  }
+
+
+  /* Game top bar */
+
+  .topbar {
+    gap: 8px;
+
+    padding: 16px 12px;
+  }
+
+
+  .topbar #letter {
+    font-size: 36px;
+  }
+
+
+  /* Spinner */
+
+  .spinner #spinLetter {
+    font-size: 80px;
+  }
+
+
+  /* Answers */
+
+  .field {
+    margin: 14px 0;
+  }
+
+
+  .answerInput {
+    min-height: 50px;
+
+    padding: 14px;
+  }
+
+
+  /* Stop */
+
+  .stop {
+    min-height: 60px;
+
+    font-size: 20px;
+  }
+
+
+  /* Results */
+
+  .resultRow {
+    padding: 12px 4px;
+  }
+
+}
+
+
+/* =========================
+   SMALL PHONES
+========================= */
+
+@media (max-width: 400px) {
+
+  .app {
+    padding: 8px;
+  }
+
+
+  .card {
+    padding: 16px;
+
+    border-radius: 14px;
+  }
+
+
+  h1 {
+    font-size: 26px;
+  }
+
+
+  .brand {
+    font-size: 18px;
+  }
+
+
+  .code strong {
+    font-size: 30px;
+    letter-spacing: 4px;
+  }
+
+
+  .topbar {
+    font-size: 13px;
+  }
+
+
+  .topbar #letter {
+    font-size: 32px;
+  }
+
+
+  .chatInputArea {
+    flex-direction: column;
+  }
+
+
+  .chatInputArea input,
+  .chatInputArea button {
+    width: 100%;
+  }
+
+
+  .chatMessages {
+    min-height: 190px;
+    max-height: 240px;
+  }
+
+
+  .spinner #spinLetter {
+    font-size: 70px;
+  }
+
+}
+
+
+/* =========================
+   VERY SMALL PHONES
+========================= */
+
+@media (max-width: 340px) {
+
+  .app {
+    padding: 6px;
+  }
+
+
+  .card {
+    padding: 14px;
+  }
+
+
+  .topbar {
+    gap: 4px;
+  }
+
+
+  .topbar #letter {
+    font-size: 28px;
+  }
+
+
+  .code strong {
+    font-size: 27px;
+    letter-spacing: 3px;
+  }
+
+}
