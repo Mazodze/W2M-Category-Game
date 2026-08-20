@@ -5,7 +5,7 @@ const $ = id => document.getElementById(id);
 let myId = null;
 let currentState = null;
 
-const categories = [
+let categories = [
   "Cars",
   "Country",
   "Food",
@@ -25,37 +25,107 @@ socket.on("connect", () => {
   myId = socket.id;
 });
 
+
+// ==================================================
+// ERROR MESSAGE
+// ==================================================
+
 socket.on("errorMsg", message => {
+
   const error = $("error");
 
   if (error) {
     error.textContent = message;
   }
+
 });
 
 
 // ==================================================
-// LOBBY CHAT
+// CHAT VISIBILITY
 // ==================================================
 
-// Receive chat messages from the server
-socket.on("chatMessage", data => {
+function updateChatVisibility(state) {
 
-  const chatMessages = $("chatMessages");
+  const lobbyChat = $("lobbyChat");
+
+  if (!lobbyChat) {
+    return;
+  }
+
+
+  // Chat is visible ONLY during:
+  //
+  // 1. Lobby
+  // 2. Results
+  //
+  // It is hidden during:
+  //
+  // 3. Spinning
+  // 4. Playing
+
+  const chatAllowed =
+    state.status === "lobby" ||
+    state.status === "results";
+
+
+  if (chatAllowed) {
+
+    lobbyChat.classList.remove("hidden");
+
+  } else {
+
+    lobbyChat.classList.add("hidden");
+
+  }
+
+}
+
+
+// ==================================================
+// CLEAR CHAT
+// ==================================================
+
+function clearChat() {
+
+  const chatMessages =
+    $("chatMessages");
 
   if (!chatMessages) {
     return;
   }
 
-  const messageElement =
+  chatMessages.innerHTML = "";
+
+}
+
+
+// ==================================================
+// RECEIVE CHAT MESSAGE
+// ==================================================
+
+socket.on("chatMessage", data => {
+
+  const chatMessages =
+    $("chatMessages");
+
+
+  if (!chatMessages) {
+    return;
+  }
+
+
+  const message =
     document.createElement("div");
 
-  messageElement.className =
+
+  message.className =
     data.id === myId
       ? "chatMessage own"
       : "chatMessage";
 
-  messageElement.innerHTML = `
+
+  message.innerHTML = `
     <div class="chatName">
       ${esc(data.name)}
     </div>
@@ -65,11 +135,16 @@ socket.on("chatMessage", data => {
     </div>
   `;
 
-  chatMessages.appendChild(messageElement);
+
+  chatMessages.appendChild(
+    message
+  );
+
 
   // Scroll to newest message
   chatMessages.scrollTop =
     chatMessages.scrollHeight;
+
 });
 
 
@@ -79,53 +154,99 @@ socket.on("chatMessage", data => {
 
 function sendChatMessage() {
 
-  const input = $("chatInput");
+  const input =
+    $("chatInput");
+
 
   if (!input) {
     return;
   }
 
+
   const message =
     input.value.trim();
+
 
   if (!message) {
     return;
   }
 
-  socket.emit("chatMessage", {
-    message: message.slice(0, 200)
-  });
+
+  // Only send while chat
+  // is currently allowed
+  if (
+    !currentState ||
+    (
+      currentState.status !== "lobby" &&
+      currentState.status !== "results"
+    )
+  ) {
+    return;
+  }
+
+
+  socket.emit(
+    "chatMessage",
+    {
+      message:
+        message.slice(0, 200)
+    }
+  );
+
 
   input.value = "";
 
   input.focus();
+
 }
 
 
-// Send button
-document.addEventListener("click", event => {
+// ==================================================
+// CHAT SEND BUTTON
+// ==================================================
 
-  if (event.target.id === "sendChatBtn") {
-    sendChatMessage();
-  }
-
-});
+const sendChatBtn =
+  $("sendChatBtn");
 
 
-// Press ENTER to send
-document.addEventListener("keydown", event => {
+if (sendChatBtn) {
 
-  if (
-    event.target.id === "chatInput" &&
-    event.key === "Enter"
-  ) {
+  sendChatBtn.addEventListener(
+    "click",
+    sendChatMessage
+  );
 
-    event.preventDefault();
+}
 
-    sendChatMessage();
-  }
 
-});
+// ==================================================
+// CHAT ENTER KEY
+// ==================================================
+
+const chatInput =
+  $("chatInput");
+
+
+if (chatInput) {
+
+  chatInput.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter"
+      ) {
+
+        event.preventDefault();
+
+        sendChatMessage();
+
+      }
+
+    }
+  );
+
+}
 
 
 // ==================================================
@@ -137,73 +258,104 @@ socket.on("state", state => {
   currentState = state;
 
 
-  // ----------------------------------------------
-  // ROOM CODE
-  // ----------------------------------------------
+  // ==================================================
+  // UPDATE CHAT VISIBILITY
+  // ==================================================
 
-  const roomTag = $("roomTag");
-  const code = $("code");
-  const gameCode = $("gameCode");
+  updateChatVisibility(
+    state
+  );
+
+
+  // ==================================================
+  // ROOM CODE
+  // ==================================================
+
+  const roomTag =
+    $("roomTag");
 
   if (roomTag) {
+
     roomTag.textContent =
       state.code
         ? `Room ${state.code}`
         : "";
+
   }
+
+
+  const code =
+    $("code");
 
   if (code) {
+
     code.textContent =
       state.code || "";
+
   }
+
+
+  const gameCode =
+    $("gameCode");
 
   if (gameCode) {
+
     gameCode.textContent =
       state.code || "";
+
   }
 
 
-  // ----------------------------------------------
-  // PLAYERS
-  // ----------------------------------------------
+  // ==================================================
+  // SHOW PLAYERS
+  // ==================================================
 
-  const playersElement = $("players");
+  const players =
+    $("players");
 
-  if (playersElement) {
 
-    playersElement.innerHTML =
+  if (players) {
+
+    players.innerHTML =
       state.players
-        .map((player, index) => {
+        .map(
+          (player, index) => {
 
-          const crown =
-            index === 0 &&
-            player.id === state.hostId
-              ? "👑 "
-              : "";
+            const crown =
+              index === 0 &&
+              player.id === state.hostId
+                ? "👑 "
+                : "";
 
-          return `
-            <div class="player">
 
-              <span>
-                ${crown}${esc(player.name)}
-              </span>
+            return `
+              <div class="player">
 
-              <span>
-                ${player.score}
-              </span>
+                <span>
+                  ${crown}${esc(player.name)}
+                </span>
 
-            </div>
-          `;
-        })
+                <span>
+                  ${player.score}
+                </span>
+
+              </div>
+            `;
+
+          }
+        )
         .join("");
+
   }
 
 
-  // ----------------------------------------------
-  // HOST START BUTTON
-  // ----------------------------------------------
+  // ==================================================
+  // START BUTTON
+  // ==================================================
 
-  const startBtn = $("startBtn");
+  const startBtn =
+    $("startBtn");
+
 
   if (startBtn) {
 
@@ -212,24 +364,37 @@ socket.on("state", state => {
       state.status === "lobby"
         ? "block"
         : "none";
+
   }
 
 
-  // ----------------------------------------------
-  // LOBBY / GAME
-  // ----------------------------------------------
+  // ==================================================
+  // LOBBY
+  // ==================================================
 
-  if (state.status === "lobby") {
+  if (
+    state.status === "lobby"
+  ) {
 
     show("lobby");
+
     hide("game");
 
-  } else {
+  }
+
+
+  // ==================================================
+  // GAME
+  // ==================================================
+
+  else {
 
     hide("lobby");
+
     show("game");
 
     renderGame(state);
+
   }
 
 });
@@ -239,13 +404,20 @@ socket.on("state", state => {
 // RESULTS
 // ==================================================
 
-socket.on("results", results => {
-  renderResults(results);
-});
+socket.on(
+  "results",
+  results => {
+
+    renderResults(
+      results
+    );
+
+  }
+);
 
 
 // ==================================================
-// HELPER FUNCTIONS
+// ESCAPE HTML
 // ==================================================
 
 function esc(value) {
@@ -255,36 +427,64 @@ function esc(value) {
     character => {
 
       const replacements = {
+
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
+
       };
 
-      return replacements[character];
+      return replacements[
+        character
+      ];
+
     }
   );
+
 }
 
+
+// ==================================================
+// SHOW
+// ==================================================
 
 function show(id) {
 
-  const element = $(id);
+  const element =
+    $(id);
+
 
   if (element) {
-    element.classList.remove("hidden");
+
+    element.classList.remove(
+      "hidden"
+    );
+
   }
+
 }
 
 
+// ==================================================
+// HIDE
+// ==================================================
+
 function hide(id) {
 
-  const element = $(id);
+  const element =
+    $(id);
+
 
   if (element) {
-    element.classList.add("hidden");
+
+    element.classList.add(
+      "hidden"
+    );
+
   }
+
 }
 
 
@@ -292,23 +492,35 @@ function hide(id) {
 // HOST GAME
 // ==================================================
 
-const hostBtn = $("hostBtn");
+const hostBtn =
+  $("hostBtn");
+
 
 if (hostBtn) {
 
   hostBtn.onclick = () => {
 
-    const nameInput = $("name");
-
     const name =
-      nameInput?.value.trim() || "Host";
+      $("name").value.trim() ||
+      "Host";
 
-    socket.emit("host", {
-      name: name
-    });
+
+    // Clear old chat
+    clearChat();
+
+
+    socket.emit(
+      "host",
+      {
+        name: name
+      }
+    );
+
 
     hide("home");
+
   };
+
 }
 
 
@@ -316,13 +528,18 @@ if (hostBtn) {
 // SHOW JOIN
 // ==================================================
 
-const showJoin = $("showJoin");
+const showJoin =
+  $("showJoin");
+
 
 if (showJoin) {
 
   showJoin.onclick = () => {
+
     show("joinBox");
+
   };
+
 }
 
 
@@ -330,39 +547,54 @@ if (showJoin) {
 // JOIN GAME
 // ==================================================
 
-const joinBtn = $("joinBtn");
+const joinBtn =
+  $("joinBtn");
+
 
 if (joinBtn) {
 
   joinBtn.onclick = () => {
 
-    const nameInput = $("name");
-    const codeInput = $("joinCode");
-
     const name =
-      nameInput?.value.trim() || "Player";
+      $("name").value.trim() ||
+      "Player";
+
 
     const code =
-      codeInput?.value.trim();
+      $("joinCode").value.trim();
+
 
     if (!code) {
-      const error = $("error");
+
+      const error =
+        $("error");
+
 
       if (error) {
+
         error.textContent =
-          "Please enter the room code.";
+          "Please enter a room code.";
+
       }
 
       return;
+
     }
 
-    socket.emit("join", {
-      code: code,
-      name: name
-    });
+
+    socket.emit(
+      "join",
+      {
+        code: code,
+        name: name
+      }
+    );
+
 
     hide("home");
+
   };
+
 }
 
 
@@ -370,13 +602,20 @@ if (joinBtn) {
 // START GAME
 // ==================================================
 
-const startBtn = $("startBtn");
+const startBtn =
+  $("startBtn");
+
 
 if (startBtn) {
 
   startBtn.onclick = () => {
-    socket.emit("start");
+
+    socket.emit(
+      "start"
+    );
+
   };
+
 }
 
 
@@ -384,13 +623,20 @@ if (startBtn) {
 // NEXT ROUND
 // ==================================================
 
-const nextBtn = $("nextBtn");
+const nextBtn =
+  $("nextBtn");
+
 
 if (nextBtn) {
 
   nextBtn.onclick = () => {
-    socket.emit("nextRound");
+
+    socket.emit(
+      "nextRound"
+    );
+
   };
+
 }
 
 
@@ -400,84 +646,139 @@ if (nextBtn) {
 
 function renderGame(state) {
 
-  const letter = $("letter");
-  const letterHint = $("letterHint");
+  const letter =
+    $("letter");
+
 
   if (letter) {
+
     letter.textContent =
       state.letter || "—";
+
   }
+
+
+  const letterHint =
+    $("letterHint");
+
 
   if (letterHint) {
+
     letterHint.textContent =
       state.letter || "";
+
   }
 
 
-  // ----------------------------------------------
+  // ==================================================
   // SPINNING
-  // ----------------------------------------------
+  // ==================================================
 
-  if (state.status === "spinning") {
+  if (
+    state.status === "spinning"
+  ) {
 
     $("statusText").textContent =
       "SPINNING…";
 
+
     show("spinner");
+
     hide("answers");
+
     hide("results");
 
+
+    // Hide chat
+    // while spinning
+    hide("lobbyChat");
+
+
     animateSpin();
+
   }
 
 
-  // ----------------------------------------------
+  // ==================================================
   // PLAYING
-  // ----------------------------------------------
+  // ==================================================
 
-  else if (state.status === "playing") {
+  else if (
+    state.status === "playing"
+  ) {
 
     $("statusText").textContent =
       "GO!";
 
+
     hide("spinner");
+
     show("answers");
+
     hide("results");
 
 
-    const fields = $("fields");
+    // Hide chat
+    // during gameplay
+    hide("lobbyChat");
+
+
+    const fields =
+      $("fields");
+
 
     if (
       fields &&
-      fields.dataset.letter !== state.letter
+      fields.dataset.letter !==
+      state.letter
     ) {
 
       fieldsBuilt = false;
+
     }
 
-    buildFields(state.letter);
+
+    buildFields(
+      state.letter
+    );
 
 
-    const stopBtn = $("stopBtn");
+    const stopBtn =
+      $("stopBtn");
+
 
     if (stopBtn) {
+
       stopBtn.disabled = false;
+
     }
+
   }
 
 
-  // ----------------------------------------------
+  // ==================================================
   // RESULTS
-  // ----------------------------------------------
+  // ==================================================
 
-  else if (state.status === "results") {
+  else if (
+    state.status === "results"
+  ) {
 
     $("statusText").textContent =
       "ROUND RESULTS";
 
+
     hide("spinner");
+
     hide("answers");
+
     show("results");
+
+
+    // SHOW CHAT
+    // after round ends
+    show("lobbyChat");
+
   }
 
 }
@@ -489,7 +790,9 @@ function renderGame(state) {
 
 function buildFields(letter) {
 
-  const fields = $("fields");
+  const fields =
+    $("fields");
+
 
   if (!fields) {
     return;
@@ -498,40 +801,47 @@ function buildFields(letter) {
 
   if (
     fieldsBuilt &&
-    fields.dataset.letter === letter
+    fields.dataset.letter ===
+      letter
   ) {
 
     return;
+
   }
 
 
   fieldsBuilt = true;
 
-  fields.dataset.letter = letter;
+
+  fields.dataset.letter =
+    letter;
 
 
   fields.innerHTML =
     categories
-      .map(category => {
+      .map(
+        category => {
 
-        return `
-          <div class="field">
+          return `
+            <div class="field">
 
-            <label>
-              ${category}
-            </label>
+              <label>
+                ${esc(category)}
+              </label>
 
-            <input
-              class="answerInput"
-              data-cat="${category}"
-              autocomplete="off"
-            >
+              <input
+                class="answerInput"
+                data-cat="${esc(category)}"
+                autocomplete="off"
+              >
 
-          </div>
-        `;
+            </div>
+          `;
 
-      })
+        }
+      )
       .join("");
+
 }
 
 
@@ -541,27 +851,42 @@ function buildFields(letter) {
 
 function animateSpin() {
 
-  clearInterval(spinTimer);
+  clearInterval(
+    spinTimer
+  );
+
 
   let index = 0;
+
 
   const letters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 
-  spinTimer = setInterval(() => {
+  spinTimer =
+    setInterval(
+      () => {
 
-    const spinLetter = $("spinLetter");
+        const spinLetter =
+          $("spinLetter");
 
-    if (spinLetter) {
 
-      spinLetter.textContent =
-        letters[index % 26];
-    }
+        if (spinLetter) {
 
-    index++;
+          spinLetter.textContent =
+            letters[
+              index % 26
+            ];
 
-  }, 80);
+        }
+
+
+        index++;
+
+      },
+      80
+    );
+
 }
 
 
@@ -573,30 +898,29 @@ function getAnswers() {
 
   const answers = {};
 
+
   document
-    .querySelectorAll(".answerInput")
+    .querySelectorAll(
+      ".answerInput"
+    )
     .forEach(input => {
 
-      answers[input.dataset.cat] =
+      answers[
+        input.dataset.cat
+      ] =
         input.value.trim();
 
     });
 
+
   return answers;
+
 }
 
 
 // ==================================================
 // SYNC ANSWERS
 // ==================================================
-//
-// Every player sends their answers to the server
-// while typing.
-//
-// The server stores each player's answers separately.
-// When somebody presses STOP, everyone receives
-// everyone's answers.
-//
 
 document.addEventListener(
   "input",
@@ -609,9 +933,17 @@ document.addEventListener(
       )
     ) {
 
-      socket.emit("syncAnswers", {
-        answers: getAnswers()
-      });
+      const answers =
+        getAnswers();
+
+
+      socket.emit(
+        "syncAnswers",
+        {
+          answers: answers
+        }
+      );
+
     }
 
   }
@@ -622,7 +954,9 @@ document.addEventListener(
 // STOP GAME
 // ==================================================
 
-const stopBtn = $("stopBtn");
+const stopBtn =
+  $("stopBtn");
+
 
 if (stopBtn) {
 
@@ -631,18 +965,25 @@ if (stopBtn) {
     const answers =
       getAnswers();
 
-    stopBtn.disabled = true;
 
-    socket.emit("stop", {
-      answers: answers
-    });
+    stopBtn.disabled =
+      true;
+
+
+    socket.emit(
+      "stop",
+      {
+        answers: answers
+      }
+    );
 
   };
+
 }
 
 
 // ==================================================
-// SHOW RESULTS
+// RENDER RESULTS
 // ==================================================
 
 function renderResults(results) {
@@ -655,23 +996,27 @@ function renderResults(results) {
   `;
 
 
-  // ----------------------------------------------
+  // ==================================================
   // PLAYER LOOKUP
-  // ----------------------------------------------
+  // ==================================================
 
   const playerMap =
     new Map(
-      (currentState?.players || [])
-        .map(player => [
+      (
+        currentState?.players ||
+        []
+      ).map(
+        player => [
           player.id,
           player.name
-        ])
+        ]
+      )
     );
 
 
-  // ----------------------------------------------
-  // EVERY PLAYER'S ANSWERS
-  // ----------------------------------------------
+  // ==================================================
+  // SHOW EVERY PLAYER'S ANSWERS
+  // ==================================================
 
   for (
     const id of Object.keys(
@@ -680,10 +1025,13 @@ function renderResults(results) {
   ) {
 
     const answers =
-      results.answers[id] || {};
+      results.answers[id] ||
+      {};
+
 
     const playerName =
-      playerMap.get(id) || "Player";
+      playerMap.get(id) ||
+      "Player";
 
 
     html += `
@@ -696,54 +1044,80 @@ function renderResults(results) {
         <div>
 
           ${categories
-            .map(category => {
+            .map(
+              category => {
 
-              return `
-                <span class="answer">
+                return `
+                  <span class="answer">
 
-                  <b>${category}:</b>
+                    <b>
+                      ${esc(category)}:
+                    </b>
 
-                  ${esc(
-                    answers[category] || "—"
-                  )}
+                    ${esc(
+                      answers[category] ||
+                      "—"
+                    )}
 
-                </span>
-              `;
+                  </span>
+                `;
 
-            })
+              }
+            )
             .join("")}
 
         </div>
 
       </div>
     `;
+
   }
 
 
-  const resultText = $("resultText");
+  const resultText =
+    $("resultText");
+
 
   if (resultText) {
-    resultText.innerHTML = html;
+
+    resultText.innerHTML =
+      html;
+
   }
 
 
-  // ----------------------------------------------
-  // NEXT ROUND
-  // ----------------------------------------------
+  // ==================================================
+  // NEXT ROUND BUTTON
+  // ==================================================
 
-  const nextRoundBtn = $("nextBtn");
+  const nextRoundButton =
+    $("nextBtn");
 
-  if (nextRoundBtn) {
 
-    nextRoundBtn.style.display =
-      myId === currentState?.hostId
+  if (nextRoundButton) {
+
+    nextRoundButton.style.display =
+      currentState &&
+      myId === currentState.hostId
         ? "block"
         : "none";
+
   }
 
 
+  // STOP BUTTON
   if (stopBtn) {
-    stopBtn.disabled = false;
+
+    stopBtn.disabled =
+      false;
+
   }
+
+
+  // ==================================================
+  // SHOW CHAT AFTER ROUND
+  // ==================================================
+
+  show("lobbyChat");
 
 }
