@@ -4,7 +4,10 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+const io = new Server(server, {
+  maxHttpBufferSize: 5e6 // 5 MB maximum Socket.IO message
+});
 
 app.use(express.static("public"));
 
@@ -15,7 +18,8 @@ app.use(express.static("public"));
 
 const rooms = new Map();
 
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const LETTERS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const CATEGORIES = [
   "Cars",
@@ -31,12 +35,17 @@ const CATEGORIES = [
 // ==================================================
 
 function generateRoomCode() {
+
   let roomCode;
 
   do {
+
     roomCode = String(
-      Math.floor(10000 + Math.random() * 90000)
+      Math.floor(
+        10000 + Math.random() * 90000
+      )
     );
+
   } while (rooms.has(roomCode));
 
   return roomCode;
@@ -48,7 +57,9 @@ function generateRoomCode() {
 // ==================================================
 
 function getRoomState(room) {
+
   return {
+
     code: room.code,
 
     hostId: room.hostId,
@@ -61,17 +72,24 @@ function getRoomState(room) {
 
     stopBy: room.stopBy,
 
-    // Chat is available only in:
-    // lobby and results
+    // Chat and voice notes are available
+    // only during lobby and results.
     chatEnabled:
       room.status === "lobby" ||
       room.status === "results",
 
-    players: Array.from(room.players.values()).map(player => ({
-      id: player.id,
-      name: player.name,
-      score: player.score
-    }))
+    players:
+      Array.from(
+        room.players.values()
+      ).map(player => ({
+
+        id: player.id,
+
+        name: player.name,
+
+        score: player.score
+
+      }))
   };
 }
 
@@ -81,10 +99,12 @@ function getRoomState(room) {
 // ==================================================
 
 function broadcastRoom(room) {
+
   io.to(room.code).emit(
     "state",
     getRoomState(room)
   );
+
 }
 
 
@@ -100,24 +120,22 @@ function startRound(room) {
 
   room.letter = null;
 
-  // Clear answers from previous round
+  // Clear previous answers
   room.answers = {};
 
 
-  // Chat automatically becomes hidden
-  // because status is now "spinning"
+  // Chat and voice notes become disabled
   broadcastRoom(room);
 
 
   // Wait 2.6 seconds before revealing letter
   setTimeout(() => {
 
-    // Make sure the room still exists
-    // and is still spinning
     if (
       !rooms.has(room.code) ||
       room.status !== "spinning"
     ) {
+
       return;
     }
 
@@ -126,7 +144,8 @@ function startRound(room) {
     room.letter =
       LETTERS[
         Math.floor(
-          Math.random() * LETTERS.length
+          Math.random() *
+          LETTERS.length
         )
       ];
 
@@ -134,7 +153,7 @@ function startRound(room) {
     room.status = "playing";
 
 
-    // Chat remains hidden
+    // Chat and voice notes remain disabled
     broadcastRoom(room);
 
   }, 2600);
@@ -156,146 +175,185 @@ io.on("connection", socket => {
   // HOST GAME
   // ==================================================
 
-  socket.on("host", ({ name }) => {
+  socket.on(
+    "host",
+    ({ name }) => {
 
-    const roomCode =
-      generateRoomCode();
+      const roomCode =
+        generateRoomCode();
 
 
-    const playerName =
-      String(name || "Host")
+      const playerName =
+        String(
+          name || "Host"
+        )
         .trim()
         .slice(0, 18);
 
 
-    const room = {
+      const room = {
 
-      code: roomCode,
+        code: roomCode,
 
-      hostId: socket.id,
+        hostId: socket.id,
 
-      // Chat is available immediately
-      // because the room starts in lobby
-      status: "lobby",
+        // Chat + voice notes available
+        status: "lobby",
 
-      letter: null,
+        letter: null,
 
-      stopBy: null,
+        stopBy: null,
 
-      answers: {},
-
-      players: new Map([
-        [
-          socket.id,
-          {
-            id: socket.id,
-            name: playerName || "Host",
-            score: 0
-          }
-        ]
-      ])
-    };
+        answers: {},
 
 
-    rooms.set(
-      roomCode,
-      room
-    );
+        players:
+          new Map([
+            [
+              socket.id,
+              {
+                id: socket.id,
+
+                name:
+                  playerName ||
+                  "Host",
+
+                score: 0
+              }
+            ]
+          ])
+      };
 
 
-    socket.join(roomCode);
-
-    socket.data.room =
-      roomCode;
-
-
-    console.log(
-      `Room created: ${roomCode}`
-    );
+      rooms.set(
+        roomCode,
+        room
+      );
 
 
-    broadcastRoom(room);
-  });
+      socket.join(
+        roomCode
+      );
+
+      socket.data.room =
+        roomCode;
+
+
+      console.log(
+        `Room created: ${roomCode}`
+      );
+
+
+      broadcastRoom(
+        room
+      );
+
+    }
+  );
 
 
   // ==================================================
   // JOIN GAME
   // ==================================================
 
-  socket.on("join", ({ code, name }) => {
+  socket.on(
+    "join",
+    ({ code, name }) => {
 
-    const roomCode =
-      String(code || "")
-        .trim();
-
-
-    const room =
-      rooms.get(roomCode);
-
-
-    // Room doesn't exist
-    if (!room) {
-
-      return socket.emit(
-        "errorMsg",
-        "Room not found."
-      );
-    }
+      const roomCode =
+        String(
+          code || ""
+        ).trim();
 
 
-    // Game already started
-    if (room.status !== "lobby") {
-
-      return socket.emit(
-        "errorMsg",
-        "That game has already started."
-      );
-    }
+      const room =
+        rooms.get(
+          roomCode
+        );
 
 
-    // Maximum 8 players
-    if (room.players.size >= 8) {
+      if (!room) {
 
-      return socket.emit(
-        "errorMsg",
-        "Room is full."
-      );
-    }
+        return socket.emit(
+          "errorMsg",
+          "Room not found."
+        );
+
+      }
 
 
-    const playerName =
-      String(name || "Player")
+      if (
+        room.status !==
+        "lobby"
+      ) {
+
+        return socket.emit(
+          "errorMsg",
+          "That game has already started."
+        );
+
+      }
+
+
+      if (
+        room.players.size >= 8
+      ) {
+
+        return socket.emit(
+          "errorMsg",
+          "Room is full."
+        );
+
+      }
+
+
+      const playerName =
+        String(
+          name || "Player"
+        )
         .trim()
         .slice(0, 18);
 
 
-    room.players.set(
-      socket.id,
-      {
-        id: socket.id,
-        name: playerName || "Player",
-        score: 0
-      }
-    );
+      room.players.set(
+        socket.id,
+        {
+
+          id: socket.id,
+
+          name:
+            playerName ||
+            "Player",
+
+          score: 0
+
+        }
+      );
 
 
-    socket.join(room.code);
+      socket.join(
+        room.code
+      );
 
-    socket.data.room =
-      room.code;
-
-
-    console.log(
-      `${playerName || "Player"} joined room ${room.code}`
-    );
+      socket.data.room =
+        room.code;
 
 
-    broadcastRoom(room);
-  });
+      console.log(
+        `${playerName || "Player"} joined room ${room.code}`
+      );
+
+
+      broadcastRoom(
+        room
+      );
+
+    }
+  );
 
 
   // ==================================================
-  // CHAT
+  // TEXT CHAT
   // ==================================================
 
   socket.on(
@@ -303,7 +361,9 @@ io.on("connection", socket => {
     ({ message }) => {
 
       const room =
-        rooms.get(socket.data.room);
+        rooms.get(
+          socket.data.room
+        );
 
 
       if (!room) {
@@ -312,7 +372,9 @@ io.on("connection", socket => {
 
 
       const player =
-        room.players.get(socket.id);
+        room.players.get(
+          socket.id
+        );
 
 
       if (!player) {
@@ -320,44 +382,209 @@ io.on("connection", socket => {
       }
 
 
-      // Chat is allowed ONLY during:
-      // lobby OR results
+      // Chat is ONLY available
+      // in lobby and results.
       if (
         room.status !== "lobby" &&
         room.status !== "results"
       ) {
+
         return;
       }
 
 
       const text =
-        String(message || "")
-          .trim();
+        String(
+          message || ""
+        ).trim();
 
 
-      // Ignore empty messages
       if (!text) {
         return;
       }
 
 
-      // Maximum 200 characters
       const safeMessage =
         text.slice(0, 200);
 
 
-      // Send message only
-      // to players in this room
-      io.to(room.code).emit(
+      io.to(
+        room.code
+      ).emit(
         "chatMessage",
         {
+
           id: socket.id,
 
           name: player.name,
 
           message: safeMessage
+
         }
       );
+
+    }
+  );
+
+
+  // ==================================================
+  // VOICE NOTE
+  // ==================================================
+
+  socket.on(
+    "voiceMessage",
+    ({ audio, mimeType, duration }) => {
+
+      const room =
+        rooms.get(
+          socket.data.room
+        );
+
+
+      if (!room) {
+        return;
+      }
+
+
+      const player =
+        room.players.get(
+          socket.id
+        );
+
+
+      if (!player) {
+        return;
+      }
+
+
+      // Voice notes are ONLY available
+      // in lobby and results.
+      if (
+        room.status !== "lobby" &&
+        room.status !== "results"
+      ) {
+
+        return;
+      }
+
+
+      // Maximum recording duration:
+      // 30 seconds.
+      const safeDuration =
+        Number(duration) || 0;
+
+
+      if (
+        safeDuration <= 0 ||
+        safeDuration > 30000
+      ) {
+
+        return socket.emit(
+          "voiceError",
+          "Voice note must be between 1 and 30 seconds."
+        );
+
+      }
+
+
+      // Make sure audio exists.
+      if (!audio) {
+
+        return socket.emit(
+          "voiceError",
+          "No audio recording received."
+        );
+
+      }
+
+
+      // Socket.IO normally sends
+      // binary data as Buffer/Uint8Array.
+      let audioBuffer;
+
+
+      if (
+        Buffer.isBuffer(audio)
+      ) {
+
+        audioBuffer = audio;
+
+      }
+
+      else if (
+        audio instanceof Uint8Array
+      ) {
+
+        audioBuffer =
+          Buffer.from(audio);
+
+      }
+
+      else if (
+        audio instanceof ArrayBuffer
+      ) {
+
+        audioBuffer =
+          Buffer.from(audio);
+
+      }
+
+      else {
+
+        return socket.emit(
+          "voiceError",
+          "Invalid audio format."
+        );
+
+      }
+
+
+      // Extra protection against
+      // extremely large recordings.
+      if (
+        audioBuffer.length >
+        5 * 1024 * 1024
+      ) {
+
+        return socket.emit(
+          "voiceError",
+          "Voice note is too large."
+        );
+
+      }
+
+
+      console.log(
+        `Voice note from ${player.name}: ${
+          audioBuffer.length
+        } bytes`
+      );
+
+
+      // Send voice note ONLY
+      // to players in this room.
+      io.to(
+        room.code
+      ).emit(
+        "voiceMessage",
+        {
+
+          id: socket.id,
+
+          name: player.name,
+
+          audio: audioBuffer,
+
+          mimeType:
+            mimeType ||
+            "audio/webm",
+
+          duration:
+            safeDuration
+
+        }
+      );
+
     }
   );
 
@@ -366,31 +593,37 @@ io.on("connection", socket => {
   // START GAME
   // ==================================================
 
-  socket.on("start", () => {
+  socket.on(
+    "start",
+    () => {
 
-    const room =
-      rooms.get(socket.data.room);
+      const room =
+        rooms.get(
+          socket.data.room
+        );
 
 
-    // Only host can start
-    // and at least 2 players
-    // are required
-    if (
-      !room ||
-      room.hostId !== socket.id ||
-      room.players.size < 2
-    ) {
-      return;
+      if (
+        !room ||
+        room.hostId !== socket.id ||
+        room.players.size < 2
+      ) {
+
+        return;
+      }
+
+
+      console.log(
+        `Game started in room ${room.code}`
+      );
+
+
+      startRound(
+        room
+      );
+
     }
-
-
-    console.log(
-      `Game started in room ${room.code}`
-    );
-
-
-    startRound(room);
-  });
+  );
 
 
   // ==================================================
@@ -402,22 +635,26 @@ io.on("connection", socket => {
     ({ answers }) => {
 
       const room =
-        rooms.get(socket.data.room);
+        rooms.get(
+          socket.data.room
+        );
 
 
-      // Only accept answers
-      // while the round is active
       if (
         !room ||
         room.status !== "playing" ||
         room.stopBy
       ) {
+
         return;
       }
 
 
-      room.answers[socket.id] =
+      room.answers[
+        socket.id
+      ] =
         answers || {};
+
     }
   );
 
@@ -431,51 +668,60 @@ io.on("connection", socket => {
     ({ answers }) => {
 
       const room =
-        rooms.get(socket.data.room);
+        rooms.get(
+          socket.data.room
+        );
 
 
-      // Ignore invalid STOP requests
       if (
         !room ||
         room.status !== "playing" ||
         room.stopBy
       ) {
+
         return;
       }
 
 
-      // Save latest answers
-      room.answers[socket.id] =
+      room.answers[
+        socket.id
+      ] =
         answers || {};
 
 
-      // Stop the round
       room.stopBy =
         socket.id;
 
-      // Results state means:
-      // CHAT BECOMES AVAILABLE
+
+      // Results = chat + voice
+      // notes become available.
       room.status =
         "results";
 
 
-      // Tell everyone that
-      // chat is available again
-      broadcastRoom(room);
+      broadcastRoom(
+        room
+      );
 
 
-      // Send results to everyone
-      io.to(room.code).emit(
+      io.to(
+        room.code
+      ).emit(
         "results",
         {
-          letter: room.letter,
+
+          letter:
+            room.letter,
 
           stopper:
-            room.players.get(socket.id)?.name ||
+            room.players.get(
+              socket.id
+            )?.name ||
             "Player",
 
           answers:
             room.answers
+
         }
       );
 
@@ -483,6 +729,7 @@ io.on("connection", socket => {
       console.log(
         `Round stopped in room ${room.code}`
       );
+
     }
   );
 
@@ -491,112 +738,133 @@ io.on("connection", socket => {
   // NEXT ROUND
   // ==================================================
 
-  socket.on("nextRound", () => {
+  socket.on(
+    "nextRound",
+    () => {
 
-    const room =
-      rooms.get(socket.data.room);
+      const room =
+        rooms.get(
+          socket.data.room
+        );
 
 
-    // Only host can start
-    // the next round
-    if (
-      !room ||
-      room.hostId !== socket.id ||
-      room.status !== "results"
-    ) {
-      return;
+      if (
+        !room ||
+        room.hostId !== socket.id ||
+        room.status !== "results"
+      ) {
+
+        return;
+      }
+
+
+      console.log(
+        `Starting next round in room ${room.code}`
+      );
+
+
+      startRound(
+        room
+      );
+
     }
-
-
-    console.log(
-      `Starting next round in room ${room.code}`
-    );
-
-
-    startRound(room);
-  });
+  );
 
 
   // ==================================================
   // DISCONNECT
   // ==================================================
 
-  socket.on("disconnect", () => {
+  socket.on(
+    "disconnect",
+    () => {
 
-    const roomCode =
-      socket.data.room;
-
-
-    const room =
-      rooms.get(roomCode);
+      const roomCode =
+        socket.data.room;
 
 
-    if (!room) {
-      return;
-    }
-
-
-    const player =
-      room.players.get(socket.id);
-
-
-    console.log(
-      `Player disconnected: ${
-        player?.name || socket.id
-      }`
-    );
-
-
-    // Remove player
-    room.players.delete(
-      socket.id
-    );
-
-
-    // Remove their answers
-    delete room.answers[
-      socket.id
-    ];
-
-
-    // ==================================================
-    // HOST LEFT
-    // ==================================================
-
-    if (
-      room.hostId === socket.id
-    ) {
-
-      const firstPlayer =
-        room.players
-          .values()
-          .next()
-          .value;
-
-
-      if (firstPlayer) {
-
-        // Give host role
-        // to another player
-        room.hostId =
-          firstPlayer.id;
-
-      } else {
-
-        // No players left
-        rooms.delete(roomCode);
-
-        console.log(
-          `Room deleted: ${roomCode}`
+      const room =
+        rooms.get(
+          roomCode
         );
 
+
+      if (!room) {
         return;
       }
+
+
+      const player =
+        room.players.get(
+          socket.id
+        );
+
+
+      console.log(
+        `Player disconnected: ${
+          player?.name ||
+          socket.id
+        }`
+      );
+
+
+      room.players.delete(
+        socket.id
+      );
+
+
+      delete room.answers[
+        socket.id
+      ];
+
+
+      // ==================================================
+      // HOST LEFT
+      // ==================================================
+
+      if (
+        room.hostId === socket.id
+      ) {
+
+        const firstPlayer =
+          room.players
+            .values()
+            .next()
+            .value;
+
+
+        if (firstPlayer) {
+
+          room.hostId =
+            firstPlayer.id;
+
+        }
+
+        else {
+
+          rooms.delete(
+            roomCode
+          );
+
+
+          console.log(
+            `Room deleted: ${roomCode}`
+          );
+
+
+          return;
+
+        }
+
+      }
+
+
+      broadcastRoom(
+        room
+      );
+
     }
-
-
-    broadcastRoom(room);
-  });
+  );
 
 });
 
@@ -606,7 +874,8 @@ io.on("connection", socket => {
 // ==================================================
 
 const PORT =
-  process.env.PORT || 3000;
+  process.env.PORT ||
+  3000;
 
 
 server.listen(
