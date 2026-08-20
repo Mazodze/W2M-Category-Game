@@ -50,11 +50,22 @@ function generateRoomCode() {
 function getRoomState(room) {
   return {
     code: room.code,
+
     hostId: room.hostId,
+
     status: room.status,
+
     letter: room.letter,
+
     categories: CATEGORIES,
+
     stopBy: room.stopBy,
+
+    // Chat is available only in:
+    // lobby and results
+    chatEnabled:
+      room.status === "lobby" ||
+      room.status === "results",
 
     players: Array.from(room.players.values()).map(player => ({
       id: player.id,
@@ -82,20 +93,26 @@ function broadcastRoom(room) {
 // ==================================================
 
 function startRound(room) {
+
   room.status = "spinning";
+
   room.stopBy = null;
+
   room.letter = null;
 
-  // Clear previous answers
+  // Clear answers from previous round
   room.answers = {};
 
+
+  // Chat automatically becomes hidden
+  // because status is now "spinning"
   broadcastRoom(room);
 
 
   // Wait 2.6 seconds before revealing letter
   setTimeout(() => {
 
-    // Make sure room still exists
+    // Make sure the room still exists
     // and is still spinning
     if (
       !rooms.has(room.code) ||
@@ -116,6 +133,8 @@ function startRound(room) {
 
     room.status = "playing";
 
+
+    // Chat remains hidden
     broadcastRoom(room);
 
   }, 2600);
@@ -155,6 +174,8 @@ io.on("connection", socket => {
 
       hostId: socket.id,
 
+      // Chat is available immediately
+      // because the room starts in lobby
       status: "lobby",
 
       letter: null,
@@ -248,7 +269,6 @@ io.on("connection", socket => {
         .slice(0, 18);
 
 
-    // Add player
     room.players.set(
       socket.id,
       {
@@ -300,6 +320,16 @@ io.on("connection", socket => {
       }
 
 
+      // Chat is allowed ONLY during:
+      // lobby OR results
+      if (
+        room.status !== "lobby" &&
+        room.status !== "results"
+      ) {
+        return;
+      }
+
+
       const text =
         String(message || "")
           .trim();
@@ -311,18 +341,20 @@ io.on("connection", socket => {
       }
 
 
-      // Limit message length
+      // Maximum 200 characters
       const safeMessage =
         text.slice(0, 200);
 
 
-      // Send ONLY to players
-      // inside this room
+      // Send message only
+      // to players in this room
       io.to(room.code).emit(
         "chatMessage",
         {
           id: socket.id,
+
           name: player.name,
+
           message: safeMessage
         }
       );
@@ -341,7 +373,8 @@ io.on("connection", socket => {
 
 
     // Only host can start
-    // Need at least 2 players
+    // and at least 2 players
+    // are required
     if (
       !room ||
       room.hostId !== socket.id ||
@@ -420,15 +453,18 @@ io.on("connection", socket => {
       room.stopBy =
         socket.id;
 
+      // Results state means:
+      // CHAT BECOMES AVAILABLE
       room.status =
         "results";
 
 
+      // Tell everyone that
+      // chat is available again
       broadcastRoom(room);
 
 
       // Send results to everyone
-      // in this room
       io.to(room.code).emit(
         "results",
         {
@@ -465,10 +501,16 @@ io.on("connection", socket => {
     // the next round
     if (
       !room ||
-      room.hostId !== socket.id
+      room.hostId !== socket.id ||
+      room.status !== "results"
     ) {
       return;
     }
+
+
+    console.log(
+      `Starting next round in room ${room.code}`
+    );
 
 
     startRound(room);
