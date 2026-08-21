@@ -723,9 +723,7 @@
       >
 
 
-        <!-- ==================================================
-             TOP BAR
-        ================================================== -->
+        <!-- TOP BAR -->
 
         <div class="topbar card">
 
@@ -763,9 +761,7 @@
 
 
 
-        <!-- ==================================================
-             SPINNER
-        ================================================== -->
+        <!-- SPINNER -->
 
         <div
           id="spinner"
@@ -785,9 +781,7 @@
 
 
 
-        <!-- ==================================================
-             ANSWERS
-        ================================================== -->
+        <!-- ANSWERS -->
 
         <div
           id="answers"
@@ -814,7 +808,6 @@
           <button
             id="stopBtn"
             class="stop"
-            type="button"
           >
             STOP!
           </button>
@@ -823,250 +816,7 @@
 
 
 
-        <!-- ==================================================
-             ROUND SCOREBOARD
-        ================================================== -->
-
-        <section
-          id="scoreboard"
-          class="scoreboard card hidden"
-        >
-
-
-          <!-- SCOREBOARD HEADER -->
-
-          <div class="scoreboardHeader">
-
-
-            <div class="scoreboardRound">
-
-              <span>
-                ROUND
-              </span>
-
-              <strong id="scoreboardRound">
-                1
-              </strong>
-
-            </div>
-
-
-
-            <div class="scoreboardTitle">
-
-              <div class="scoreboardTrophy">
-                🏆
-              </div>
-
-              <h2>
-                ROUND SCOREBOARD
-              </h2>
-
-              <p>
-                Enter the scores for this round
-              </p>
-
-            </div>
-
-
-
-            <div class="scoreboardLetter">
-
-              <span>
-                LETTER
-              </span>
-
-              <strong id="scoreboardLetter">
-                —
-              </strong>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- HOST NOTICE -->
-
-          <div
-            id="scoreboardHostNotice"
-            class="scoreboardNotice"
-          >
-
-            <span>
-              🔒
-            </span>
-
-            <div>
-
-              <strong>
-                HOST SCORING
-              </strong>
-
-              <p>
-                Only the host can enter and save
-                the scores for this round.
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- ==================================================
-               SCOREBOARD TABLE
-          ================================================== -->
-
-          <div class="scoreboardTableWrapper">
-
-            <table
-              id="scoreboardTable"
-              class="scoreboardTable"
-            >
-
-              <thead>
-
-                <tr>
-
-                  <th>
-                    CATEGORIES
-                  </th>
-
-                  <!--
-                    app.js will insert player
-                    columns here.
-                  -->
-
-                </tr>
-
-              </thead>
-
-
-              <tbody>
-
-                <!--
-                  app.js will create:
-
-                  CAR
-                  COUNTRY
-                  FOOD
-                  ANIMAL
-                  NAME
-                  TOTAL
-
-                  rows dynamically.
-                -->
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-
-
-          <!-- ==================================================
-               SCORING SYSTEM
-          ================================================== -->
-
-          <div class="scoringSystem">
-
-            <div class="scoringIcon">
-              ℹ
-            </div>
-
-
-            <div>
-
-              <strong>
-                SCORING SYSTEM
-              </strong>
-
-              <p>
-
-                <span>
-                  10 points
-                </span>
-                for a unique answer
-
-                <b>•</b>
-
-                <span>
-                  5 points
-                </span>
-                if another player has the same answer
-
-                <b>•</b>
-
-                <span>
-                  0 points
-                </span>
-                for duplicate or empty answers
-
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- ==================================================
-               SCOREBOARD ACTIONS
-          ================================================== -->
-
-          <div class="scoreboardActions">
-
-
-            <button
-              id="scoreboardCancelBtn"
-              class="scoreboardCancelBtn"
-              type="button"
-            >
-
-              ✕
-              CANCEL
-
-            </button>
-
-
-
-            <button
-              id="saveScoresBtn"
-              class="saveScoresBtn"
-              type="button"
-            >
-
-              ✓
-              SAVE & SHOW RESULTS
-
-            </button>
-
-          </div>
-
-
-
-          <!-- NON-HOST MESSAGE -->
-
-          <p
-            id="scoreboardWaiting"
-            class="scoreboardWaiting hidden"
-          >
-
-            🔒 Waiting for the host to enter
-            and save the scores...
-
-          </p>
-
-
-        </section>
-
-
-
-        <!-- ==================================================
-             RESULTS
-        ================================================== -->
+        <!-- RESULTS -->
 
         <div
           id="results"
@@ -1081,10 +831,7 @@
           <div id="resultText"></div>
 
 
-          <button
-            id="nextBtn"
-            type="button"
-          >
+          <button id="nextBtn">
             NEXT ROUND
           </button>
 
@@ -1103,7 +850,6 @@
   ================================================== -->
 
   <script src="/socket.io/socket.io.js"></script>
-
 
 
   <!-- ==================================================
