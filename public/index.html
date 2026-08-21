@@ -10,7 +10,7 @@
     content="width=device-width, initial-scale=1"
   >
 
-  <title>Letter Rush — Multiplayer</title>
+  <title>BMAKS Letter Rush — Multiplayer</title>
 
   <link
     rel="stylesheet"
@@ -22,6 +22,24 @@
 
 <body>
 
+  <!-- ==================================================
+       BACKGROUND DECORATION
+  ================================================== -->
+
+  <div class="backgroundLetters" aria-hidden="true">
+
+    <span>A</span>
+    <span>R</span>
+    <span>U</span>
+    <span>S</span>
+    <span>H</span>
+    <span>B</span>
+    <span>M</span>
+    <span>K</span>
+
+  </div>
+
+
   <div class="app">
 
 
@@ -32,12 +50,26 @@
     <header>
 
       <div class="brand">
-       <span>B-MAKS</span>LETTER<span>RUSH</span>
+
+        <span class="brandBmaks">
+          BMAKS
+        </span>
+
+        <span class="brandLetter">
+          LETTER
+        </span>
+
+        <span class="brandRush">
+          RUSH
+        </span>
+
       </div>
+
 
       <div id="roomTag"></div>
 
     </header>
+
 
 
     <main>
@@ -49,79 +81,498 @@
 
       <section
         id="home"
-        class="card"
+        class="homePage"
       >
 
-        <h1>
-          Multiplayer Category Game
-        </h1>
+
+        <!-- HERO -->
+
+        <div class="hero">
 
 
-        <p class="muted">
+          <!-- GAME ICON -->
 
-          Create a room, invite friends with a
-          5-digit code, spin a letter, and race
-          to complete the categories.
+          <div class="gameLogo">
 
-        </p>
+            <div class="logoTile tile1">
+              L
+            </div>
+
+            <div class="logoTile tile2">
+              R
+            </div>
+
+            <div class="logoTile tile3">
+              !
+            </div>
+
+          </div>
 
 
-        <input
-          id="name"
-          type="text"
-          maxlength="18"
-          autocomplete="off"
-          placeholder="Your name"
+          <!-- BRAND -->
+
+          <div class="heroBrand">
+
+            <div class="heroBmaks">
+              BMAKS
+            </div>
+
+
+            <h1>
+              LETTER
+              <span>
+                RUSH
+              </span>
+            </h1>
+
+
+            <div class="heroLine"></div>
+
+
+            <p>
+              THE ULTIMATE
+              <strong>
+                WORD BATTLE
+              </strong>
+            </p>
+
+          </div>
+
+
+          <!-- DESCRIPTION -->
+
+          <p class="heroDescription">
+
+            Think fast. Type faster.
+            <br>
+
+            Challenge your friends and prove
+            you know your words.
+
+          </p>
+
+
+        </div>
+
+
+
+        <!-- ==================================================
+             GAME CARD
+        ================================================== -->
+
+        <div
+          id="homeCard"
+          class="card homeCard"
         >
 
 
-        <div class="actions">
+          <!-- LIVE BADGE -->
 
-          <button id="hostBtn">
-            HOST GAME
+          <div class="onlineBadge">
+
+            <span class="onlineDot"></span>
+
+            MULTIPLAYER
+
+          </div>
+
+
+
+          <!-- NAME -->
+
+          <label
+            for="name"
+            class="inputLabel"
+          >
+            YOUR NAME
+          </label>
+
+
+          <input
+            id="name"
+            type="text"
+            maxlength="18"
+            autocomplete="off"
+            placeholder="Enter your name"
+          >
+
+
+
+          <!-- ACTIONS -->
+
+          <div class="actions">
+
+
+            <button
+              id="hostBtn"
+              class="primaryGameBtn"
+              type="button"
+            >
+
+              <span>
+                🎮
+              </span>
+
+              HOST GAME
+
+            </button>
+
+
+
+            <button
+              id="showJoin"
+              class="secondaryGameBtn"
+              type="button"
+            >
+
+              <span>
+                👥
+              </span>
+
+              JOIN GAME
+
+            </button>
+
+
+          </div>
+
+
+
+          <!-- JOIN ROOM -->
+
+          <div
+            id="joinBox"
+            class="joinBox hidden"
+          >
+
+            <div class="joinDivider">
+
+              <span>
+                ENTER ROOM CODE
+              </span>
+
+            </div>
+
+
+            <input
+              id="joinCode"
+              type="text"
+              inputmode="numeric"
+              maxlength="5"
+              autocomplete="off"
+              placeholder="00000"
+            >
+
+
+            <button
+              id="joinBtn"
+              class="joinRoomBtn"
+              type="button"
+            >
+
+              JOIN ROOM
+
+            </button>
+
+          </div>
+
+
+
+          <!-- HOW IT WORKS -->
+
+          <button
+            id="howItWorksBtn"
+            class="howItWorksBtn"
+            type="button"
+          >
+
+            <span class="howIcon">
+              ?
+            </span>
+
+            HOW IT WORKS
+
+            <span class="arrow">
+              →
+            </span>
+
           </button>
+
+
+
+          <!-- ERROR -->
+
+          <p
+            id="error"
+            class="error"
+          ></p>
+
+
+        </div>
+
+
+
+        <!-- ==================================================
+             CATEGORY PREVIEW
+        ================================================== -->
+
+        <div class="categoryPreview">
+
+
+          <div class="categoryTitle">
+            <span></span>
+            CATEGORIES
+            <span></span>
+          </div>
+
+
+          <div class="categoryCards">
+
+
+            <div class="categoryCard">
+              <span>🚗</span>
+              <small>CAR</small>
+            </div>
+
+
+            <div class="categoryCard">
+              <span>🌍</span>
+              <small>COUNTRY</small>
+            </div>
+
+
+            <div class="categoryCard">
+              <span>🍔</span>
+              <small>FOOD</small>
+            </div>
+
+
+            <div class="categoryCard">
+              <span>🐾</span>
+              <small>ANIMAL</small>
+            </div>
+
+
+            <div class="categoryCard">
+              <span>👤</span>
+              <small>NAME</small>
+            </div>
+
+
+          </div>
+
+        </div>
+
+
+      </section>
+
+
+
+      <!-- ==================================================
+           HOW IT WORKS MODAL
+      ================================================== -->
+
+      <div
+        id="howItWorksModal"
+        class="modal hidden"
+      >
+
+        <div
+          class="modalOverlay"
+          id="modalOverlay"
+        ></div>
+
+
+        <div
+          class="howItWorksBox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="howItWorksTitle"
+        >
 
 
           <button
-            id="showJoin"
-            class="secondary"
+            id="closeHowItWorks"
+            class="closeModal"
+            type="button"
+            aria-label="Close"
           >
-            JOIN GAME
+            ×
           </button>
+
+
+
+          <div class="modalIcon">
+            🎮
+          </div>
+
+
+
+          <h2 id="howItWorksTitle">
+            HOW IT WORKS
+          </h2>
+
+
+          <p class="muted modalIntro">
+
+            Think fast. Answer faster.
+            Be the first to complete the categories.
+
+          </p>
+
+
+
+          <div class="steps">
+
+
+            <!-- STEP 1 -->
+
+            <div class="step">
+
+              <div class="stepNumber">
+                1
+              </div>
+
+
+              <div class="stepContent">
+
+                <h3>
+                  Create or Join
+                </h3>
+
+                <p>
+                  Enter your name and host a game
+                  or join your friend's room using
+                  the 5-digit code.
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- STEP 2 -->
+
+            <div class="step">
+
+              <div class="stepNumber">
+                2
+              </div>
+
+
+              <div class="stepContent">
+
+                <h3>
+                  Get Your Letter
+                </h3>
+
+                <p>
+                  A random letter is selected.
+                  Letters will not repeat until
+                  the entire alphabet is used.
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- STEP 3 -->
+
+            <div class="step">
+
+              <div class="stepNumber">
+                3
+              </div>
+
+
+              <div class="stepContent">
+
+                <h3>
+                  Fill The Categories
+                </h3>
+
+                <p>
+                  Quickly answer Cars, Country,
+                  Food, Animal and Name using
+                  the selected letter.
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- STEP 4 -->
+
+            <div class="step">
+
+              <div class="stepNumber">
+                4
+              </div>
+
+
+              <div class="stepContent">
+
+                <h3>
+                  STOP!
+                </h3>
+
+                <p>
+                  Finished first?
+                  Hit STOP! and end the round.
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- STEP 5 -->
+
+            <div class="step">
+
+              <div class="stepNumber">
+                5
+              </div>
+
+
+              <div class="stepContent">
+
+                <h3>
+                  Play Again
+                </h3>
+
+                <p>
+                  The host starts another round
+                  with a fresh unused letter.
+                </p>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+
+
+          <button
+            id="closeHowItWorksBtn"
+            class="modalDoneBtn"
+            type="button"
+          >
+            LET'S PLAY
+          </button>
+
 
         </div>
 
-
-        <!-- JOIN ROOM -->
-
-        <div
-          id="joinBox"
-          class="hidden"
-        >
-
-          <input
-            id="joinCode"
-            type="text"
-            inputmode="numeric"
-            maxlength="5"
-            autocomplete="off"
-            placeholder="5-digit room code"
-          >
-
-
-          <button id="joinBtn">
-            JOIN ROOM
-          </button>
-
-        </div>
-
-
-        <p
-          id="error"
-          class="error"
-        ></p>
-
-      </section>
+      </div>
 
 
 
@@ -134,8 +585,6 @@
         class="lobby hidden"
       >
 
-
-        <!-- PLAYERS -->
 
         <div class="card lobbyPlayers">
 
@@ -159,7 +608,6 @@
           <p class="muted">
 
             Share the code with your friends.
-
             The host starts the game.
 
           </p>
@@ -201,19 +649,11 @@
         </div>
 
 
-        <!-- ==================================================
-             CHAT MESSAGES
-        ================================================== -->
-
         <div
           id="chatMessages"
           class="chatMessages"
         ></div>
 
-
-        <!-- ==================================================
-             CHAT INPUT
-        ================================================== -->
 
         <div class="chatInputArea">
 
@@ -226,8 +666,6 @@
           >
 
 
-          <!-- VOICE NOTE BUTTON -->
-
           <button
             id="voiceBtn"
             type="button"
@@ -238,8 +676,6 @@
           </button>
 
 
-          <!-- SEND BUTTON -->
-
           <button
             id="sendChatBtn"
             type="button"
@@ -249,10 +685,6 @@
 
         </div>
 
-
-        <!-- ==================================================
-             VOICE RECORDING STATUS
-        ================================================== -->
 
         <div
           id="voiceStatus"
@@ -291,7 +723,9 @@
       >
 
 
-        <!-- TOP BAR -->
+        <!-- ==================================================
+             TOP BAR
+        ================================================== -->
 
         <div class="topbar card">
 
@@ -380,11 +814,253 @@
           <button
             id="stopBtn"
             class="stop"
+            type="button"
           >
             STOP!
           </button>
 
         </div>
+
+
+
+        <!-- ==================================================
+             ROUND SCOREBOARD
+        ================================================== -->
+
+        <section
+          id="scoreboard"
+          class="scoreboard card hidden"
+        >
+
+
+          <!-- SCOREBOARD HEADER -->
+
+          <div class="scoreboardHeader">
+
+
+            <div class="scoreboardRound">
+
+              <span>
+                ROUND
+              </span>
+
+              <strong id="scoreboardRound">
+                1
+              </strong>
+
+            </div>
+
+
+
+            <div class="scoreboardTitle">
+
+              <div class="scoreboardTrophy">
+                🏆
+              </div>
+
+              <h2>
+                ROUND SCOREBOARD
+              </h2>
+
+              <p>
+                Enter the scores for this round
+              </p>
+
+            </div>
+
+
+
+            <div class="scoreboardLetter">
+
+              <span>
+                LETTER
+              </span>
+
+              <strong id="scoreboardLetter">
+                —
+              </strong>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- HOST NOTICE -->
+
+          <div
+            id="scoreboardHostNotice"
+            class="scoreboardNotice"
+          >
+
+            <span>
+              🔒
+            </span>
+
+            <div>
+
+              <strong>
+                HOST SCORING
+              </strong>
+
+              <p>
+                Only the host can enter and save
+                the scores for this round.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- ==================================================
+               SCOREBOARD TABLE
+          ================================================== -->
+
+          <div class="scoreboardTableWrapper">
+
+            <table
+              id="scoreboardTable"
+              class="scoreboardTable"
+            >
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    CATEGORIES
+                  </th>
+
+                  <!--
+                    app.js will insert player
+                    columns here.
+                  -->
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <!--
+                  app.js will create:
+
+                  CAR
+                  COUNTRY
+                  FOOD
+                  ANIMAL
+                  NAME
+                  TOTAL
+
+                  rows dynamically.
+                -->
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+
+
+          <!-- ==================================================
+               SCORING SYSTEM
+          ================================================== -->
+
+          <div class="scoringSystem">
+
+            <div class="scoringIcon">
+              ℹ
+            </div>
+
+
+            <div>
+
+              <strong>
+                SCORING SYSTEM
+              </strong>
+
+              <p>
+
+                <span>
+                  10 points
+                </span>
+                for a unique answer
+
+                <b>•</b>
+
+                <span>
+                  5 points
+                </span>
+                if another player has the same answer
+
+                <b>•</b>
+
+                <span>
+                  0 points
+                </span>
+                for duplicate or empty answers
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- ==================================================
+               SCOREBOARD ACTIONS
+          ================================================== -->
+
+          <div class="scoreboardActions">
+
+
+            <button
+              id="scoreboardCancelBtn"
+              class="scoreboardCancelBtn"
+              type="button"
+            >
+
+              ✕
+              CANCEL
+
+            </button>
+
+
+
+            <button
+              id="saveScoresBtn"
+              class="saveScoresBtn"
+              type="button"
+            >
+
+              ✓
+              SAVE & SHOW RESULTS
+
+            </button>
+
+          </div>
+
+
+
+          <!-- NON-HOST MESSAGE -->
+
+          <p
+            id="scoreboardWaiting"
+            class="scoreboardWaiting hidden"
+          >
+
+            🔒 Waiting for the host to enter
+            and save the scores...
+
+          </p>
+
+
+        </section>
 
 
 
@@ -405,7 +1081,10 @@
           <div id="resultText"></div>
 
 
-          <button id="nextBtn">
+          <button
+            id="nextBtn"
+            type="button"
+          >
             NEXT ROUND
           </button>
 
@@ -418,6 +1097,7 @@
   </div>
 
 
+
   <!-- ==================================================
        SOCKET.IO
   ================================================== -->
@@ -425,11 +1105,136 @@
   <script src="/socket.io/socket.io.js"></script>
 
 
+
   <!-- ==================================================
        GAME JAVASCRIPT
   ================================================== -->
 
   <script src="app.js"></script>
+
+
+
+  <!-- ==================================================
+       HOW IT WORKS
+  ================================================== -->
+
+  <script>
+
+    const howItWorksBtn =
+      document.getElementById(
+        "howItWorksBtn"
+      );
+
+
+    const howItWorksModal =
+      document.getElementById(
+        "howItWorksModal"
+      );
+
+
+    const closeHowItWorks =
+      document.getElementById(
+        "closeHowItWorks"
+      );
+
+
+    const closeHowItWorksBtn =
+      document.getElementById(
+        "closeHowItWorksBtn"
+      );
+
+
+    const modalOverlay =
+      document.getElementById(
+        "modalOverlay"
+      );
+
+
+    function openHowItWorks() {
+
+      howItWorksModal.classList.remove(
+        "hidden"
+      );
+
+      document.body.classList.add(
+        "modalOpen"
+      );
+
+    }
+
+
+    function closeHowItWorksModal() {
+
+      howItWorksModal.classList.add(
+        "hidden"
+      );
+
+      document.body.classList.remove(
+        "modalOpen"
+      );
+
+    }
+
+
+    if (howItWorksBtn) {
+
+      howItWorksBtn.addEventListener(
+        "click",
+        openHowItWorks
+      );
+
+    }
+
+
+    if (closeHowItWorks) {
+
+      closeHowItWorks.addEventListener(
+        "click",
+        closeHowItWorksModal
+      );
+
+    }
+
+
+    if (closeHowItWorksBtn) {
+
+      closeHowItWorksBtn.addEventListener(
+        "click",
+        closeHowItWorksModal
+      );
+
+    }
+
+
+    if (modalOverlay) {
+
+      modalOverlay.addEventListener(
+        "click",
+        closeHowItWorksModal
+      );
+
+    }
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape" &&
+          !howItWorksModal.classList.contains(
+            "hidden"
+          )
+        ) {
+
+          closeHowItWorksModal();
+
+        }
+
+      }
+    );
+
+  </script>
 
 </body>
 
