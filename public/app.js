@@ -202,10 +202,6 @@ socket.on("voiceMessage", data => {
   );
 
 
-  // ==================================================
-  // CONVERT RECEIVED AUDIO TO BLOB URL
-  // ==================================================
-
   let audioBlob;
 
 
@@ -296,10 +292,6 @@ socket.on("voiceMessage", data => {
     );
 
 
-  // ==================================================
-  // CREATE CHAT MESSAGE
-  // ==================================================
-
   const message =
     document.createElement("div");
 
@@ -349,7 +341,6 @@ socket.on("voiceMessage", data => {
     audioUrl;
 
 
-  // Duration display
   if (
     data.duration &&
     Number(data.duration) > 0
@@ -588,10 +579,6 @@ async function startVoiceRecording() {
   );
 
 
-  // ==================================================
-  // CHECK GAME STATE
-  // ==================================================
-
   if (
     !currentState ||
     (
@@ -609,20 +596,12 @@ async function startVoiceRecording() {
   }
 
 
-  // ==================================================
-  // PREVENT DOUBLE RECORDING
-  // ==================================================
-
   if (isRecording) {
 
     return;
 
   }
 
-
-  // ==================================================
-  // CHECK MICROPHONE SUPPORT
-  // ==================================================
 
   if (
     !navigator.mediaDevices ||
@@ -653,10 +632,6 @@ async function startVoiceRecording() {
 
   try {
 
-    // ==================================================
-    // REQUEST MICROPHONE
-    // ==================================================
-
     const stream =
       await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -675,12 +650,7 @@ async function startVoiceRecording() {
     audioChunks = [];
 
 
-    // ==================================================
-    // SELECT SUPPORTED AUDIO FORMAT
-    // ==================================================
-
-    let mimeType =
-      "";
+    let mimeType = "";
 
 
     const formats = [
@@ -717,10 +687,6 @@ async function startVoiceRecording() {
     );
 
 
-    // ==================================================
-    // CREATE MEDIA RECORDER
-    // ==================================================
-
     if (mimeType) {
 
       mediaRecorder =
@@ -742,10 +708,6 @@ async function startVoiceRecording() {
     }
 
 
-    // ==================================================
-    // AUDIO DATA
-    // ==================================================
-
     mediaRecorder.ondataavailable =
       event => {
 
@@ -763,10 +725,6 @@ async function startVoiceRecording() {
       };
 
 
-    // ==================================================
-    // RECORDING STARTED
-    // ==================================================
-
     mediaRecorder.onstart =
       () => {
 
@@ -777,10 +735,6 @@ async function startVoiceRecording() {
       };
 
 
-    // ==================================================
-    // RECORDING STOPPED
-    // ==================================================
-
     mediaRecorder.onstop =
       async () => {
 
@@ -789,7 +743,6 @@ async function startVoiceRecording() {
         );
 
 
-        // Stop microphone
         stream
           .getTracks()
           .forEach(
@@ -814,10 +767,6 @@ async function startVoiceRecording() {
         );
 
 
-        // ==================================================
-        // CHECK AUDIO
-        // ==================================================
-
         if (
           audioChunks.length === 0
         ) {
@@ -830,10 +779,6 @@ async function startVoiceRecording() {
 
         }
 
-
-        // ==================================================
-        // CREATE AUDIO BLOB
-        // ==================================================
 
         const finalMimeType =
           mediaRecorder.mimeType ||
@@ -864,10 +809,6 @@ async function startVoiceRecording() {
         );
 
 
-        // ==================================================
-        // SEND AUDIO
-        // ==================================================
-
         await sendVoiceMessage(
           audioBlob,
           finalMimeType
@@ -875,10 +816,6 @@ async function startVoiceRecording() {
 
       };
 
-
-    // ==================================================
-    // HANDLE RECORDER ERROR
-    // ==================================================
 
     mediaRecorder.onerror =
       event => {
@@ -888,14 +825,17 @@ async function startVoiceRecording() {
           event.error
         );
 
+
         stream
           .getTracks()
           .forEach(
             track => track.stop()
           );
 
+
         isRecording =
           false;
+
 
         updateVoiceUI(
           false
@@ -903,10 +843,6 @@ async function startVoiceRecording() {
 
       };
 
-
-    // ==================================================
-    // START RECORDING
-    // ==================================================
 
     mediaRecorder.start(
       250
@@ -933,10 +869,6 @@ async function startVoiceRecording() {
     );
 
 
-    // ==================================================
-    // TIMER
-    // ==================================================
-
     recordingTimer =
       setInterval(
         () => {
@@ -953,7 +885,6 @@ async function startVoiceRecording() {
           updateVoiceTimer();
 
 
-          // Server accepts max 30 seconds
           if (
             recordingSeconds >= 30
           ) {
@@ -1209,10 +1140,6 @@ async function sendVoiceMessage(
   );
 
 
-  // ==================================================
-  // CHECK STATE
-  // ==================================================
-
   if (
     !currentState ||
     (
@@ -1229,10 +1156,6 @@ async function sendVoiceMessage(
 
   }
 
-
-  // ==================================================
-  // CHECK SIZE
-  // ==================================================
 
   if (
     audioBlob.size <= 0
@@ -1263,10 +1186,6 @@ async function sendVoiceMessage(
 
   try {
 
-    // ==================================================
-    // GET ARRAY BUFFER
-    // ==================================================
-
     const arrayBuffer =
       await audioBlob.arrayBuffer();
 
@@ -1278,18 +1197,10 @@ async function sendVoiceMessage(
     );
 
 
-    // ==================================================
-    // CALCULATE DURATION
-    // ==================================================
-
     const duration =
       Date.now() -
       recordingStartTime;
 
-
-    // ==================================================
-    // SEND BINARY AUDIO
-    // ==================================================
 
     socket.emit(
       "voiceMessage",
@@ -1398,7 +1309,7 @@ socket.on("state", state => {
   if (players) {
 
     players.innerHTML =
-      state.players
+      (state.players || [])
         .map(
           (player, index) => {
 
@@ -1417,7 +1328,7 @@ socket.on("state", state => {
                 </span>
 
                 <span>
-                  ${player.score}
+                  ${player.score || 0}
                 </span>
 
               </div>
@@ -1484,7 +1395,7 @@ socket.on("state", state => {
 
 
 // ==================================================
-// RESULTS
+// RESULTS EVENT
 // ==================================================
 
 socket.on(
@@ -1494,6 +1405,51 @@ socket.on(
     renderResults(
       results
     );
+
+  }
+);
+
+
+// ==================================================
+// SCOREBOARD EVENT
+// ==================================================
+
+socket.on(
+  "scoreboard",
+  data => {
+
+    console.log(
+      "Scoreboard received:",
+      data
+    );
+
+
+    if (!currentState) {
+      return;
+    }
+
+
+    currentState.roundScores =
+      data.scores || {};
+
+
+    // ==================================================
+    // UPDATE PLAYER TOTALS
+    // ==================================================
+
+    if (
+      Array.isArray(
+        data.players
+      )
+    ) {
+
+      currentState.players =
+        data.players;
+
+    }
+
+
+    renderScoreboard();
 
   }
 );
@@ -2238,5 +2194,729 @@ function renderResults(
 
 
   show("lobbyChat");
+
+
+  // ==================================================
+  // SHOW SCOREBOARD
+  // ==================================================
+
+  if (currentState) {
+
+    currentState.roundScores =
+      null;
+
+    renderScoreboard();
+
+  }
+
+}
+
+
+// ==================================================
+// ROUND SCOREBOARD
+// ==================================================
+
+function renderScoreboard() {
+
+  if (!currentState) {
+    return;
+  }
+
+
+  let scoreboard =
+    $("scoreboard");
+
+
+  // ==================================================
+  // CREATE SCOREBOARD
+  // ==================================================
+
+  if (!scoreboard) {
+
+    scoreboard =
+      document.createElement("div");
+
+    scoreboard.id =
+      "scoreboard";
+
+    scoreboard.className =
+      "scoreboard card";
+
+
+    const resultsBox =
+      $("results");
+
+
+    if (resultsBox) {
+
+      resultsBox.appendChild(
+        scoreboard
+      );
+
+    }
+
+  }
+
+
+  // ==================================================
+  // CHECK IF SCORES HAVE BEEN SUBMITTED
+  // ==================================================
+
+  const results =
+    currentState.roundScores || null;
+
+
+  if (!results) {
+
+    scoreboard.innerHTML = `
+      <div class="scoreboardHeader">
+
+        <div>
+
+          <span class="scoreboardEyebrow">
+            ROUND SCOREBOARD
+          </span>
+
+          <h2>
+            Enter Round Scores
+          </h2>
+
+          <p class="muted">
+            The host enters the points for each player.
+          </p>
+
+        </div>
+
+      </div>
+    `;
+
+
+    // ==================================================
+    // HOST
+    // ==================================================
+
+    if (
+      myId === currentState.hostId
+    ) {
+
+      renderHostScoreForm(
+        scoreboard
+      );
+
+    }
+
+
+    // ==================================================
+    // PLAYER
+    // ==================================================
+
+    else {
+
+      scoreboard.innerHTML += `
+        <div class="scoreWaiting">
+
+          <div class="scoreWaitingIcon">
+            ⏳
+          </div>
+
+          <h3>
+            Waiting for the host
+          </h3>
+
+          <p class="muted">
+            The host is entering the round scores.
+          </p>
+
+        </div>
+      `;
+
+    }
+
+
+    return;
+
+  }
+
+
+  // ==================================================
+  // SHOW FINAL SCOREBOARD
+  // ==================================================
+
+  renderSubmittedScoreboard(
+    scoreboard,
+    results
+  );
+
+}
+
+
+// ==================================================
+// HOST SCORE FORM
+// ==================================================
+
+function renderHostScoreForm(
+  scoreboard
+) {
+
+  const players =
+    currentState.players || [];
+
+
+  let html = `
+    <div class="scoreTableWrapper">
+
+      <table class="scoreTable">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Categories
+            </th>
+  `;
+
+
+  players.forEach(
+    player => {
+
+      html += `
+        <th>
+          ${esc(player.name)}
+        </th>
+      `;
+
+    }
+  );
+
+
+  html += `
+          </tr>
+
+        </thead>
+
+        <tbody>
+  `;
+
+
+  // ==================================================
+  // CATEGORY ROWS
+  // ==================================================
+
+  categories.forEach(
+    category => {
+
+      html += `
+        <tr>
+
+          <th>
+            ${esc(category)}
+          </th>
+      `;
+
+
+      players.forEach(
+        player => {
+
+          html += `
+            <td>
+
+              <input
+                type="number"
+                min="0"
+                max="10"
+                value="0"
+                class="scoreInput"
+                data-player-id="${esc(player.id)}"
+                data-category="${esc(category)}"
+              >
+
+            </td>
+          `;
+
+        }
+      );
+
+
+      html += `
+        </tr>
+      `;
+
+    }
+  );
+
+
+  // ==================================================
+  // TOTAL
+  // ==================================================
+
+  html += `
+        <tr class="totalRow">
+
+          <th>
+            TOTAL
+          </th>
+  `;
+
+
+  players.forEach(
+    player => {
+
+      html += `
+        <td>
+
+          <strong
+            class="playerTotal"
+            data-total-player="${esc(player.id)}"
+          >
+            0
+          </strong>
+
+        </td>
+      `;
+
+    }
+  );
+
+
+  html += `
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <button
+      id="submitScoresBtn"
+      class="submitScoresBtn"
+      type="button"
+    >
+      SUBMIT SCORES
+    </button>
+  `;
+
+
+  scoreboard.innerHTML +=
+    html;
+
+
+  // ==================================================
+  // SCORE INPUT EVENTS
+  // ==================================================
+
+  scoreboard
+    .querySelectorAll(".scoreInput")
+    .forEach(
+      input => {
+
+        input.addEventListener(
+          "input",
+          updateScoreTotals
+        );
+
+      }
+    );
+
+
+  // ==================================================
+  // SUBMIT BUTTON
+  // ==================================================
+
+  const submitBtn =
+    $("submitScoresBtn");
+
+
+  if (submitBtn) {
+
+    submitBtn.onclick =
+      submitRoundScores;
+
+  }
+
+
+  updateScoreTotals();
+
+}
+
+
+// ==================================================
+// UPDATE SCORE TOTALS
+// ==================================================
+
+function updateScoreTotals() {
+
+  if (!currentState) {
+    return;
+  }
+
+
+  const players =
+    currentState.players || [];
+
+
+  players.forEach(
+    player => {
+
+      let total = 0;
+
+
+      document
+        .querySelectorAll(
+          `.scoreInput[data-player-id="${CSS.escape(player.id)}"]`
+        )
+        .forEach(
+          input => {
+
+            let value =
+              Number(input.value);
+
+
+            if (
+              !Number.isFinite(value)
+            ) {
+
+              value = 0;
+
+            }
+
+
+            value =
+              Math.max(
+                0,
+                Math.min(
+                  10,
+                  value
+                )
+              );
+
+
+            total += value;
+
+          }
+        );
+
+
+      const totalElement =
+        document.querySelector(
+          `.playerTotal[data-total-player="${CSS.escape(player.id)}"]`
+        );
+
+
+      if (totalElement) {
+
+        totalElement.textContent =
+          total;
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// GET ROUND SCORES
+// ==================================================
+
+function getRoundScores() {
+
+  const scores =
+    {};
+
+
+  const players =
+    currentState?.players || [];
+
+
+  players.forEach(
+    player => {
+
+      scores[player.id] =
+        {};
+
+
+      categories.forEach(
+        category => {
+
+          const input =
+            document.querySelector(
+              `.scoreInput[data-player-id="${CSS.escape(player.id)}"][data-category="${CSS.escape(category)}"]`
+            );
+
+
+          let value =
+            input
+              ? Number(input.value)
+              : 0;
+
+
+          if (
+            !Number.isFinite(value)
+          ) {
+
+            value = 0;
+
+          }
+
+
+          value =
+            Math.max(
+              0,
+              Math.min(
+                10,
+                Math.round(value)
+              )
+            );
+
+
+          scores[player.id][category] =
+            value;
+
+        }
+      );
+
+    }
+  );
+
+
+  return scores;
+
+}
+
+
+// ==================================================
+// SUBMIT ROUND SCORES
+// ==================================================
+
+function submitRoundScores() {
+
+  if (!currentState) {
+    return;
+  }
+
+
+  // ==================================================
+  // HOST CHECK
+  // ==================================================
+
+  if (
+    myId !== currentState.hostId
+  ) {
+
+    alert(
+      "Only the host can submit scores."
+    );
+
+    return;
+
+  }
+
+
+  const scores =
+    getRoundScores();
+
+
+  const submitBtn =
+    $("submitScoresBtn");
+
+
+  if (submitBtn) {
+
+    submitBtn.disabled =
+      true;
+
+    submitBtn.textContent =
+      "SUBMITTING...";
+
+  }
+
+
+  socket.emit(
+    "submitRoundScores",
+    {
+      scores:
+        scores
+    }
+  );
+
+}
+
+
+// ==================================================
+// RENDER SUBMITTED SCOREBOARD
+// ==================================================
+
+function renderSubmittedScoreboard(
+  scoreboard,
+  scores
+) {
+
+  const players =
+    currentState?.players || [];
+
+
+  let html = `
+    <div class="scoreboardHeader">
+
+      <div>
+
+        <span class="scoreboardEyebrow">
+          ROUND COMPLETE
+        </span>
+
+        <h2>
+          Scoreboard
+        </h2>
+
+        <p class="muted">
+          Round scores submitted by the host.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="scoreTableWrapper">
+
+      <table class="scoreTable">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Categories
+            </th>
+  `;
+
+
+  players.forEach(
+    player => {
+
+      html += `
+        <th>
+          ${esc(player.name)}
+        </th>
+      `;
+
+    }
+  );
+
+
+  html += `
+          </tr>
+
+        </thead>
+
+        <tbody>
+  `;
+
+
+  // ==================================================
+  // CATEGORY ROWS
+  // ==================================================
+
+  categories.forEach(
+    category => {
+
+      html += `
+        <tr>
+
+          <th>
+            ${esc(category)}
+          </th>
+      `;
+
+
+      players.forEach(
+        player => {
+
+          const value =
+            scores[player.id]?.[category] ??
+            0;
+
+
+          html += `
+            <td>
+              ${value}
+            </td>
+          `;
+
+        }
+      );
+
+
+      html += `
+        </tr>
+      `;
+
+    }
+  );
+
+
+  // ==================================================
+  // TOTAL ROW
+  // ==================================================
+
+  html += `
+        <tr class="totalRow">
+
+          <th>
+            TOTAL
+          </th>
+  `;
+
+
+  players.forEach(
+    player => {
+
+      let total = 0;
+
+
+      categories.forEach(
+        category => {
+
+          total +=
+            Number(
+              scores[player.id]?.[category] ||
+              0
+            );
+
+        }
+      );
+
+
+      html += `
+        <td>
+
+          <strong>
+            ${total}
+          </strong>
+
+        </td>
+      `;
+
+    }
+  );
+
+
+  html += `
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+
+
+  scoreboard.innerHTML =
+    html;
 
 }
