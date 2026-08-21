@@ -94,7 +94,6 @@ function updateChatVisibility(state) {
     state.status === "lobby" ||
     state.status === "results";
 
-
   if (chatAllowed) {
 
     lobbyChat.classList.remove(
@@ -108,9 +107,7 @@ function updateChatVisibility(state) {
     );
 
     if (isRecording) {
-
       stopVoiceRecording();
-
     }
 
   }
@@ -149,16 +146,13 @@ socket.on("chatMessage", data => {
     return;
   }
 
-
   const message =
     document.createElement("div");
-
 
   message.className =
     data.id === myId
       ? "chatMessage own"
       : "chatMessage";
-
 
   message.innerHTML = `
     <div class="chatName">
@@ -170,11 +164,9 @@ socket.on("chatMessage", data => {
     </div>
   `;
 
-
   chatMessages.appendChild(
     message
   );
-
 
   chatMessages.scrollTop =
     chatMessages.scrollHeight;
@@ -195,15 +187,12 @@ socket.on("voiceMessage", data => {
     return;
   }
 
-
   console.log(
     "Voice note received:",
     data
   );
 
-
   let audioBlob;
-
 
   try {
 
@@ -285,22 +274,18 @@ socket.on("voiceMessage", data => {
 
   }
 
-
   const audioUrl =
     URL.createObjectURL(
       audioBlob
     );
 
-
   const message =
     document.createElement("div");
-
 
   message.className =
     data.id === myId
       ? "chatMessage own"
       : "chatMessage";
-
 
   const name =
     document.createElement("div");
@@ -311,13 +296,11 @@ socket.on("voiceMessage", data => {
   name.textContent =
     data.name;
 
-
   const voiceContainer =
     document.createElement("div");
 
   voiceContainer.className =
     "voiceMessage";
-
 
   const icon =
     document.createElement("span");
@@ -328,18 +311,12 @@ socket.on("voiceMessage", data => {
   icon.textContent =
     "🎙️";
 
-
   const audio =
     document.createElement("audio");
 
   audio.controls = true;
-
-  audio.preload =
-    "metadata";
-
-  audio.src =
-    audioUrl;
-
+  audio.preload = "metadata";
+  audio.src = audioUrl;
 
   if (
     data.duration &&
@@ -363,7 +340,6 @@ socket.on("voiceMessage", data => {
 
   }
 
-
   voiceContainer.appendChild(
     icon
   );
@@ -371,7 +347,6 @@ socket.on("voiceMessage", data => {
   voiceContainer.appendChild(
     audio
   );
-
 
   message.appendChild(
     name
@@ -381,11 +356,9 @@ socket.on("voiceMessage", data => {
     voiceContainer
   );
 
-
   chatMessages.appendChild(
     message
   );
-
 
   chatMessages.scrollTop =
     chatMessages.scrollHeight;
@@ -404,16 +377,13 @@ function formatDuration(milliseconds) {
       milliseconds / 1000
     );
 
-
   const minutes =
     Math.floor(
       totalSeconds / 60
     );
 
-
   const seconds =
     totalSeconds % 60;
-
 
   return (
     String(minutes).padStart(2, "0") +
@@ -437,15 +407,12 @@ function sendChatMessage() {
     return;
   }
 
-
   const message =
     input.value.trim();
-
 
   if (!message) {
     return;
   }
-
 
   if (
     !currentState ||
@@ -459,7 +426,6 @@ function sendChatMessage() {
 
   }
 
-
   socket.emit(
     "chatMessage",
     {
@@ -468,9 +434,7 @@ function sendChatMessage() {
     }
   );
 
-
   input.value = "";
-
   input.focus();
 
 }
@@ -482,7 +446,6 @@ function sendChatMessage() {
 
 const sendChatBtn =
   $("sendChatBtn");
-
 
 if (sendChatBtn) {
 
@@ -500,7 +463,6 @@ if (sendChatBtn) {
 
 const chatInput =
   $("chatInput");
-
 
 if (chatInput) {
 
@@ -531,7 +493,6 @@ if (chatInput) {
 const voiceBtn =
   $("voiceBtn");
 
-
 if (voiceBtn) {
 
   voiceBtn.addEventListener(
@@ -552,7 +513,6 @@ if (voiceBtn) {
 
 const stopVoiceBtn =
   $("stopVoiceBtn");
-
 
 if (stopVoiceBtn) {
 
@@ -578,7 +538,6 @@ async function startVoiceRecording() {
     "Starting voice recording..."
   );
 
-
   if (
     !currentState ||
     (
@@ -595,13 +554,9 @@ async function startVoiceRecording() {
 
   }
 
-
   if (isRecording) {
-
     return;
-
   }
-
 
   if (
     !navigator.mediaDevices ||
@@ -616,7 +571,6 @@ async function startVoiceRecording() {
 
   }
 
-
   if (
     !window.MediaRecorder
   ) {
@@ -629,7 +583,6 @@ async function startVoiceRecording() {
 
   }
 
-
   try {
 
     const stream =
@@ -641,17 +594,13 @@ async function startVoiceRecording() {
         }
       });
 
-
     console.log(
       "Microphone permission granted."
     );
 
-
     audioChunks = [];
 
-
     let mimeType = "";
-
 
     const formats = [
       "audio/webm;codecs=opus",
@@ -659,7 +608,6 @@ async function startVoiceRecording() {
       "audio/ogg;codecs=opus",
       "audio/mp4"
     ];
-
 
     for (
       const format of formats
@@ -680,12 +628,10 @@ async function startVoiceRecording() {
 
     }
 
-
     console.log(
       "Selected audio format:",
       mimeType || "browser default"
     );
-
 
     if (mimeType) {
 
@@ -707,7 +653,6 @@ async function startVoiceRecording() {
 
     }
 
-
     mediaRecorder.ondataavailable =
       event => {
 
@@ -724,7 +669,6 @@ async function startVoiceRecording() {
 
       };
 
-
     mediaRecorder.onstart =
       () => {
 
@@ -734,7 +678,6 @@ async function startVoiceRecording() {
 
       };
 
-
     mediaRecorder.onstop =
       async () => {
 
@@ -742,13 +685,11 @@ async function startVoiceRecording() {
           "Recording stopped."
         );
 
-
         stream
           .getTracks()
           .forEach(
             track => track.stop()
           );
-
 
         clearInterval(
           recordingTimer
@@ -757,15 +698,12 @@ async function startVoiceRecording() {
         recordingTimer =
           null;
 
-
         isRecording =
           false;
-
 
         updateVoiceUI(
           false
         );
-
 
         if (
           audioChunks.length === 0
@@ -779,12 +717,10 @@ async function startVoiceRecording() {
 
         }
 
-
         const finalMimeType =
           mediaRecorder.mimeType ||
           mimeType ||
           "audio/webm";
-
 
         const audioBlob =
           new Blob(
@@ -795,19 +731,16 @@ async function startVoiceRecording() {
             }
           );
 
-
         console.log(
           "Audio size:",
           audioBlob.size,
           "bytes"
         );
 
-
         console.log(
           "Audio type:",
           audioBlob.type
         );
-
 
         await sendVoiceMessage(
           audioBlob,
@@ -815,7 +748,6 @@ async function startVoiceRecording() {
         );
 
       };
-
 
     mediaRecorder.onerror =
       event => {
@@ -825,17 +757,14 @@ async function startVoiceRecording() {
           event.error
         );
 
-
         stream
           .getTracks()
           .forEach(
             track => track.stop()
           );
 
-
         isRecording =
           false;
-
 
         updateVoiceUI(
           false
@@ -843,31 +772,24 @@ async function startVoiceRecording() {
 
       };
 
-
     mediaRecorder.start(
       250
     );
 
-
     isRecording =
       true;
-
 
     recordingSeconds =
       0;
 
-
     recordingStartTime =
       Date.now();
 
-
     updateVoiceTimer();
-
 
     updateVoiceUI(
       true
     );
-
 
     recordingTimer =
       setInterval(
@@ -881,9 +803,7 @@ async function startVoiceRecording() {
               ) / 1000
             );
 
-
           updateVoiceTimer();
-
 
           if (
             recordingSeconds >= 30
@@ -905,7 +825,6 @@ async function startVoiceRecording() {
       "Microphone error:",
       error
     );
-
 
     if (
       error.name ===
@@ -975,7 +894,6 @@ function stopVoiceRecording() {
     "Stopping voice recording..."
   );
 
-
   if (
     mediaRecorder &&
     mediaRecorder.state !== "inactive"
@@ -984,7 +902,6 @@ function stopVoiceRecording() {
     mediaRecorder.stop();
 
   }
-
 
   clearInterval(
     recordingTimer
@@ -1007,14 +924,11 @@ function updateVoiceUI(
   const voiceBtn =
     $("voiceBtn");
 
-
   const voiceStatus =
     $("voiceStatus");
 
-
   const stopVoiceBtn =
     $("stopVoiceBtn");
-
 
   if (recording) {
 
@@ -1028,7 +942,6 @@ function updateVoiceUI(
 
     }
 
-
     if (voiceStatus) {
 
       voiceStatus.classList.remove(
@@ -1036,7 +949,6 @@ function updateVoiceUI(
       );
 
     }
-
 
     if (stopVoiceBtn) {
 
@@ -1059,7 +971,6 @@ function updateVoiceUI(
 
     }
 
-
     if (voiceStatus) {
 
       voiceStatus.classList.add(
@@ -1068,14 +979,12 @@ function updateVoiceUI(
 
     }
 
-
     if (stopVoiceBtn) {
 
       stopVoiceBtn.disabled =
         false;
 
     }
-
 
     recordingSeconds =
       0;
@@ -1096,21 +1005,17 @@ function updateVoiceTimer() {
   const timer =
     $("voiceTimer");
 
-
   if (!timer) {
     return;
   }
-
 
   const minutes =
     Math.floor(
       recordingSeconds / 60
     );
 
-
   const seconds =
     recordingSeconds % 60;
-
 
   timer.textContent =
     String(minutes).padStart(
@@ -1139,7 +1044,6 @@ async function sendVoiceMessage(
     "Preparing voice note..."
   );
 
-
   if (
     !currentState ||
     (
@@ -1156,7 +1060,6 @@ async function sendVoiceMessage(
 
   }
 
-
   if (
     audioBlob.size <= 0
   ) {
@@ -1168,7 +1071,6 @@ async function sendVoiceMessage(
     return;
 
   }
-
 
   if (
     audioBlob.size >
@@ -1183,12 +1085,10 @@ async function sendVoiceMessage(
 
   }
 
-
   try {
 
     const arrayBuffer =
       await audioBlob.arrayBuffer();
-
 
     console.log(
       "Sending audio:",
@@ -1196,11 +1096,9 @@ async function sendVoiceMessage(
       "bytes"
     );
 
-
     const duration =
       Date.now() -
       recordingStartTime;
-
 
     socket.emit(
       "voiceMessage",
@@ -1217,7 +1115,6 @@ async function sendVoiceMessage(
           duration
       }
     );
-
 
     console.log(
       "Voice note sent."
@@ -1250,11 +1147,9 @@ socket.on("state", state => {
   currentState =
     state;
 
-
   updateChatVisibility(
     state
   );
-
 
   // ==================================================
   // ROOM CODE
@@ -1262,7 +1157,6 @@ socket.on("state", state => {
 
   const roomTag =
     $("roomTag");
-
 
   if (roomTag) {
 
@@ -1273,10 +1167,8 @@ socket.on("state", state => {
 
   }
 
-
   const code =
     $("code");
-
 
   if (code) {
 
@@ -1285,10 +1177,8 @@ socket.on("state", state => {
 
   }
 
-
   const gameCode =
     $("gameCode");
-
 
   if (gameCode) {
 
@@ -1297,14 +1187,12 @@ socket.on("state", state => {
 
   }
 
-
   // ==================================================
   // PLAYERS
   // ==================================================
 
   const players =
     $("players");
-
 
   if (players) {
 
@@ -1318,7 +1206,6 @@ socket.on("state", state => {
               player.id === state.hostId
                 ? "👑 "
                 : "";
-
 
             return `
               <div class="player">
@@ -1340,14 +1227,12 @@ socket.on("state", state => {
 
   }
 
-
   // ==================================================
   // START BUTTON
   // ==================================================
 
   const startBtn =
     $("startBtn");
-
 
   if (startBtn) {
 
@@ -1358,7 +1243,6 @@ socket.on("state", state => {
         : "none";
 
   }
-
 
   // ==================================================
   // LOBBY
@@ -1372,8 +1256,9 @@ socket.on("state", state => {
 
     hide("game");
 
-  }
+    hide("scoreboard");
 
+  }
 
   // ==================================================
   // GAME
@@ -1415,7 +1300,7 @@ socket.on(
 // ==================================================
 
 socket.on(
-  "scoreboard",
+  "scoreboardUpdated",
   data => {
 
     console.log(
@@ -1423,15 +1308,14 @@ socket.on(
       data
     );
 
-
     if (!currentState) {
       return;
     }
 
-
     currentState.roundScores =
-      data.scores || {};
-
+      data.roundScores ||
+      data.scores ||
+      null;
 
     // ==================================================
     // UPDATE PLAYER TOTALS
@@ -1447,7 +1331,6 @@ socket.on(
         data.players;
 
     }
-
 
     renderScoreboard();
 
@@ -1475,7 +1358,6 @@ function esc(value) {
 
       };
 
-
       return replacements[
         character
       ];
@@ -1494,7 +1376,6 @@ function show(id) {
 
   const element =
     $(id);
-
 
   if (element) {
 
@@ -1516,7 +1397,6 @@ function hide(id) {
   const element =
     $(id);
 
-
   if (element) {
 
     element.classList.add(
@@ -1535,7 +1415,6 @@ function hide(id) {
 const hostBtn =
   $("hostBtn");
 
-
 if (hostBtn) {
 
   hostBtn.onclick = () => {
@@ -1544,9 +1423,7 @@ if (hostBtn) {
       $("name").value.trim() ||
       "Host";
 
-
     clearChat();
-
 
     socket.emit(
       "host",
@@ -1555,7 +1432,6 @@ if (hostBtn) {
           name
       }
     );
-
 
     hide("home");
 
@@ -1570,7 +1446,6 @@ if (hostBtn) {
 
 const showJoin =
   $("showJoin");
-
 
 if (showJoin) {
 
@@ -1590,7 +1465,6 @@ if (showJoin) {
 const joinBtn =
   $("joinBtn");
 
-
 if (joinBtn) {
 
   joinBtn.onclick = () => {
@@ -1599,16 +1473,13 @@ if (joinBtn) {
       $("name").value.trim() ||
       "Player";
 
-
     const code =
       $("joinCode").value.trim();
-
 
     if (!code) {
 
       const error =
         $("error");
-
 
       if (error) {
 
@@ -1617,11 +1488,9 @@ if (joinBtn) {
 
       }
 
-
       return;
 
     }
-
 
     socket.emit(
       "join",
@@ -1633,7 +1502,6 @@ if (joinBtn) {
           name
       }
     );
-
 
     hide("home");
 
@@ -1648,7 +1516,6 @@ if (joinBtn) {
 
 const startBtn =
   $("startBtn");
-
 
 if (startBtn) {
 
@@ -1670,10 +1537,18 @@ if (startBtn) {
 const nextBtn =
   $("nextBtn");
 
-
 if (nextBtn) {
 
   nextBtn.onclick = () => {
+
+    if (
+      !currentState ||
+      myId !== currentState.hostId
+    ) {
+
+      return;
+
+    }
 
     socket.emit(
       "nextRound"
@@ -1693,7 +1568,6 @@ function renderGame(state) {
   const letter =
     $("letter");
 
-
   if (letter) {
 
     letter.textContent =
@@ -1701,10 +1575,8 @@ function renderGame(state) {
 
   }
 
-
   const letterHint =
     $("letterHint");
-
 
   if (letterHint) {
 
@@ -1712,7 +1584,6 @@ function renderGame(state) {
       state.letter || "";
 
   }
-
 
   // ==================================================
   // SPINNING
@@ -1725,7 +1596,6 @@ function renderGame(state) {
     const statusText =
       $("statusText");
 
-
     if (statusText) {
 
       statusText.textContent =
@@ -1733,15 +1603,15 @@ function renderGame(state) {
 
     }
 
-
     show("spinner");
 
     hide("answers");
 
     hide("results");
 
-    hide("lobbyChat");
+    hide("scoreboard");
 
+    hide("lobbyChat");
 
     if (isRecording) {
 
@@ -1749,11 +1619,9 @@ function renderGame(state) {
 
     }
 
-
     animateSpin();
 
   }
-
 
   // ==================================================
   // PLAYING
@@ -1766,7 +1634,6 @@ function renderGame(state) {
     const statusText =
       $("statusText");
 
-
     if (statusText) {
 
       statusText.textContent =
@@ -1774,15 +1641,15 @@ function renderGame(state) {
 
     }
 
-
     hide("spinner");
 
     show("answers");
 
     hide("results");
 
-    hide("lobbyChat");
+    hide("scoreboard");
 
+    hide("lobbyChat");
 
     if (isRecording) {
 
@@ -1790,10 +1657,8 @@ function renderGame(state) {
 
     }
 
-
     const fields =
       $("fields");
-
 
     if (
       fields &&
@@ -1806,15 +1671,12 @@ function renderGame(state) {
 
     }
 
-
     buildFields(
       state.letter
     );
 
-
     const stopBtn =
       $("stopBtn");
-
 
     if (stopBtn) {
 
@@ -1824,7 +1686,6 @@ function renderGame(state) {
     }
 
   }
-
 
   // ==================================================
   // RESULTS
@@ -1837,7 +1698,6 @@ function renderGame(state) {
     const statusText =
       $("statusText");
 
-
     if (statusText) {
 
       statusText.textContent =
@@ -1845,12 +1705,13 @@ function renderGame(state) {
 
     }
 
-
     hide("spinner");
 
     hide("answers");
 
     show("results");
+
+    show("scoreboard");
 
     show("lobbyChat");
 
@@ -1868,11 +1729,9 @@ function buildFields(letter) {
   const fields =
     $("fields");
 
-
   if (!fields) {
     return;
   }
-
 
   if (
     fieldsBuilt &&
@@ -1884,14 +1743,11 @@ function buildFields(letter) {
 
   }
 
-
   fieldsBuilt =
     true;
 
-
   fields.dataset.letter =
     letter;
-
 
   fields.innerHTML =
     categories
@@ -1931,14 +1787,11 @@ function animateSpin() {
     spinTimer
   );
 
-
   let index =
     0;
 
-
   const letters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 
   spinTimer =
     setInterval(
@@ -1946,7 +1799,6 @@ function animateSpin() {
 
         const spinLetter =
           $("spinLetter");
-
 
         if (spinLetter) {
 
@@ -1956,7 +1808,6 @@ function animateSpin() {
             ];
 
         }
-
 
         index++;
 
@@ -1976,7 +1827,6 @@ function getAnswers() {
   const answers =
     {};
 
-
   document
     .querySelectorAll(
       ".answerInput"
@@ -1991,7 +1841,6 @@ function getAnswers() {
 
       }
     );
-
 
   return answers;
 
@@ -2034,7 +1883,6 @@ document.addEventListener(
 const stopBtn =
   $("stopBtn");
 
-
 if (stopBtn) {
 
   stopBtn.onclick = () => {
@@ -2042,10 +1890,8 @@ if (stopBtn) {
     const answers =
       getAnswers();
 
-
     stopBtn.disabled =
       true;
-
 
     socket.emit(
       "stop",
@@ -2075,7 +1921,6 @@ function renderResults(
     </p>
   `;
 
-
   // ==================================================
   // PLAYER LOOKUP
   // ==================================================
@@ -2093,7 +1938,6 @@ function renderResults(
       )
     );
 
-
   // ==================================================
   // SHOW ANSWERS
   // ==================================================
@@ -2108,11 +1952,9 @@ function renderResults(
       results.answers[id] ||
       {};
 
-
     const playerName =
       playerMap.get(id) ||
       "Player";
-
 
     html += `
       <div class="resultRow">
@@ -2153,10 +1995,8 @@ function renderResults(
 
   }
 
-
   const resultText =
     $("resultText");
-
 
   if (resultText) {
 
@@ -2165,14 +2005,12 @@ function renderResults(
 
   }
 
-
   // ==================================================
   // NEXT ROUND BUTTON
   // ==================================================
 
   const nextRoundButton =
     $("nextBtn");
-
 
   if (nextRoundButton) {
 
@@ -2184,7 +2022,6 @@ function renderResults(
 
   }
 
-
   if (stopBtn) {
 
     stopBtn.disabled =
@@ -2192,9 +2029,7 @@ function renderResults(
 
   }
 
-
   show("lobbyChat");
-
 
   // ==================================================
   // SHOW SCOREBOARD
@@ -2222,51 +2057,38 @@ function renderScoreboard() {
     return;
   }
 
-
-  let scoreboard =
+  const scoreboard =
     $("scoreboard");
 
-
-  // ==================================================
-  // CREATE SCOREBOARD
-  // ==================================================
-
   if (!scoreboard) {
-
-    scoreboard =
-      document.createElement("div");
-
-    scoreboard.id =
-      "scoreboard";
-
-    scoreboard.className =
-      "scoreboard card";
-
-
-    const resultsBox =
-      $("results");
-
-
-    if (resultsBox) {
-
-      resultsBox.appendChild(
-        scoreboard
-      );
-
-    }
-
+    return;
   }
 
+  // ==================================================
+  // MAKE SCOREBOARD VISIBLE
+  // ==================================================
+
+  scoreboard.classList.remove(
+    "hidden"
+  );
 
   // ==================================================
   // CHECK IF SCORES HAVE BEEN SUBMITTED
   // ==================================================
 
-  const results =
-    currentState.roundScores || null;
+  const roundScores =
+    currentState.roundScores;
 
+  const hasSubmittedScores =
+    roundScores &&
+    typeof roundScores === "object" &&
+    Object.keys(roundScores).length > 0;
 
-  if (!results) {
+  // ==================================================
+  // SCORES NOT YET SUBMITTED
+  // ==================================================
+
+  if (!hasSubmittedScores) {
 
     scoreboard.innerHTML = `
       <div class="scoreboardHeader">
@@ -2290,7 +2112,6 @@ function renderScoreboard() {
       </div>
     `;
 
-
     // ==================================================
     // HOST
     // ==================================================
@@ -2305,9 +2126,8 @@ function renderScoreboard() {
 
     }
 
-
     // ==================================================
-    // PLAYER
+    // NON-HOST
     // ==================================================
 
     else {
@@ -2332,19 +2152,16 @@ function renderScoreboard() {
 
     }
 
-
     return;
-
   }
 
-
   // ==================================================
-  // SHOW FINAL SCOREBOARD
+  // SCORES HAVE BEEN SUBMITTED
   // ==================================================
 
   renderSubmittedScoreboard(
     scoreboard,
-    results
+    roundScores
   );
 
 }
@@ -2361,7 +2178,6 @@ function renderHostScoreForm(
   const players =
     currentState.players || [];
 
-
   let html = `
     <div class="scoreTableWrapper">
 
@@ -2376,7 +2192,6 @@ function renderHostScoreForm(
             </th>
   `;
 
-
   players.forEach(
     player => {
 
@@ -2389,7 +2204,6 @@ function renderHostScoreForm(
     }
   );
 
-
   html += `
           </tr>
 
@@ -2397,7 +2211,6 @@ function renderHostScoreForm(
 
         <tbody>
   `;
-
 
   // ==================================================
   // CATEGORY ROWS
@@ -2414,7 +2227,6 @@ function renderHostScoreForm(
           </th>
       `;
 
-
       players.forEach(
         player => {
 
@@ -2425,6 +2237,7 @@ function renderHostScoreForm(
                 type="number"
                 min="0"
                 max="10"
+                step="1"
                 value="0"
                 class="scoreInput"
                 data-player-id="${esc(player.id)}"
@@ -2437,14 +2250,12 @@ function renderHostScoreForm(
         }
       );
 
-
       html += `
         </tr>
       `;
 
     }
   );
-
 
   // ==================================================
   // TOTAL
@@ -2457,7 +2268,6 @@ function renderHostScoreForm(
             TOTAL
           </th>
   `;
-
 
   players.forEach(
     player => {
@@ -2478,7 +2288,6 @@ function renderHostScoreForm(
     }
   );
 
-
   html += `
         </tr>
 
@@ -2487,7 +2296,6 @@ function renderHostScoreForm(
       </table>
 
     </div>
-
 
     <button
       id="submitScoresBtn"
@@ -2498,10 +2306,8 @@ function renderHostScoreForm(
     </button>
   `;
 
-
   scoreboard.innerHTML +=
     html;
-
 
   // ==================================================
   // SCORE INPUT EVENTS
@@ -2520,7 +2326,6 @@ function renderHostScoreForm(
       }
     );
 
-
   // ==================================================
   // SUBMIT BUTTON
   // ==================================================
@@ -2528,14 +2333,12 @@ function renderHostScoreForm(
   const submitBtn =
     $("submitScoresBtn");
 
-
   if (submitBtn) {
 
     submitBtn.onclick =
       submitRoundScores;
 
   }
-
 
   updateScoreTotals();
 
@@ -2552,16 +2355,13 @@ function updateScoreTotals() {
     return;
   }
 
-
   const players =
     currentState.players || [];
-
 
   players.forEach(
     player => {
 
       let total = 0;
-
 
       document
         .querySelectorAll(
@@ -2573,7 +2373,6 @@ function updateScoreTotals() {
             let value =
               Number(input.value);
 
-
             if (
               !Number.isFinite(value)
             ) {
@@ -2581,7 +2380,6 @@ function updateScoreTotals() {
               value = 0;
 
             }
-
 
             value =
               Math.max(
@@ -2592,18 +2390,15 @@ function updateScoreTotals() {
                 )
               );
 
-
             total += value;
 
           }
         );
 
-
       const totalElement =
         document.querySelector(
           `.playerTotal[data-total-player="${CSS.escape(player.id)}"]`
         );
-
 
       if (totalElement) {
 
@@ -2627,17 +2422,14 @@ function getRoundScores() {
   const scores =
     {};
 
-
   const players =
     currentState?.players || [];
-
 
   players.forEach(
     player => {
 
       scores[player.id] =
         {};
-
 
       categories.forEach(
         category => {
@@ -2647,12 +2439,10 @@ function getRoundScores() {
               `.scoreInput[data-player-id="${CSS.escape(player.id)}"][data-category="${CSS.escape(category)}"]`
             );
 
-
           let value =
             input
               ? Number(input.value)
               : 0;
-
 
           if (
             !Number.isFinite(value)
@@ -2661,7 +2451,6 @@ function getRoundScores() {
             value = 0;
 
           }
-
 
           value =
             Math.max(
@@ -2672,7 +2461,6 @@ function getRoundScores() {
               )
             );
 
-
           scores[player.id][category] =
             value;
 
@@ -2681,7 +2469,6 @@ function getRoundScores() {
 
     }
   );
-
 
   return scores;
 
@@ -2697,7 +2484,6 @@ function submitRoundScores() {
   if (!currentState) {
     return;
   }
-
 
   // ==================================================
   // HOST CHECK
@@ -2715,14 +2501,11 @@ function submitRoundScores() {
 
   }
 
-
   const scores =
     getRoundScores();
 
-
   const submitBtn =
     $("submitScoresBtn");
-
 
   if (submitBtn) {
 
@@ -2733,7 +2516,6 @@ function submitRoundScores() {
       "SUBMITTING...";
 
   }
-
 
   socket.emit(
     "submitRoundScores",
@@ -2755,9 +2537,16 @@ function renderSubmittedScoreboard(
   scores
 ) {
 
+  if (!scoreboard) {
+    return;
+  }
+
+  scoreboard.classList.remove(
+    "hidden"
+  );
+
   const players =
     currentState?.players || [];
-
 
   let html = `
     <div class="scoreboardHeader">
@@ -2780,7 +2569,6 @@ function renderSubmittedScoreboard(
 
     </div>
 
-
     <div class="scoreTableWrapper">
 
       <table class="scoreTable">
@@ -2794,7 +2582,6 @@ function renderSubmittedScoreboard(
             </th>
   `;
 
-
   players.forEach(
     player => {
 
@@ -2807,7 +2594,6 @@ function renderSubmittedScoreboard(
     }
   );
 
-
   html += `
           </tr>
 
@@ -2815,7 +2601,6 @@ function renderSubmittedScoreboard(
 
         <tbody>
   `;
-
 
   // ==================================================
   // CATEGORY ROWS
@@ -2832,14 +2617,12 @@ function renderSubmittedScoreboard(
           </th>
       `;
 
-
       players.forEach(
         player => {
 
           const value =
             scores[player.id]?.[category] ??
             0;
-
 
           html += `
             <td>
@@ -2850,14 +2633,12 @@ function renderSubmittedScoreboard(
         }
       );
 
-
       html += `
         </tr>
       `;
 
     }
   );
-
 
   // ==================================================
   // TOTAL ROW
@@ -2871,12 +2652,10 @@ function renderSubmittedScoreboard(
           </th>
   `;
 
-
   players.forEach(
     player => {
 
       let total = 0;
-
 
       categories.forEach(
         category => {
@@ -2889,7 +2668,6 @@ function renderSubmittedScoreboard(
 
         }
       );
-
 
       html += `
         <td>
@@ -2904,7 +2682,6 @@ function renderSubmittedScoreboard(
     }
   );
 
-
   html += `
         </tr>
 
@@ -2914,7 +2691,6 @@ function renderSubmittedScoreboard(
 
     </div>
   `;
-
 
   scoreboard.innerHTML =
     html;
